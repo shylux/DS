@@ -3,10 +3,26 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node app"
+    "start": "node app",
+    "babel": "./node_modules/.bin/babel public/js --out-file public/js/script-compiled.js --watch --source-maps inline",
+    "webpack": "./node_modules/.bin/webpack --watch"
   },
   "dependencies": {
+    "babel-loader": "^7.1.1",
+    "babel-preset-latest": "^6.24.1",
+    "express": "*",
     "node": "*",
-    "express": "*"
+    "webpack": "^3.4.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.0.0"
+  },
+  "babel": {
+    "presets": [
+      "latest"
+    ],
+    "ignore": [
+      "script-compiled.js"
+    ]
   }
 }
