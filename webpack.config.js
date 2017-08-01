@@ -15,9 +15,18 @@ module.exports = {
                 query: {
                     presets: ['es2015']
                 }
+            },
+            {
+                test: /\.hbs$/,
+                loader: "handlebars-loader"
             }
         ]
     },
+    plugins: [
+        new webpack.ProvidePlugin({
+            $: "jquery"
+        })
+    ],
     stats: {
         colors: true
     },
