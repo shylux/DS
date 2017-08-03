@@ -15,6 +15,6 @@ export class BlackTile {
 
 export class WhiteTile {
     get classes() {
-        return ["white-tile"];
+        return ["tile-white"];
     }
 }

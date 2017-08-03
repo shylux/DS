@@ -12,8 +12,8 @@ export default class Piece {
         return [];
     }
 
-    render() {
-        throw "NotImplemented";
+    image() {
+        throw "NoImageProvided";
     }
 }
 
@@ -23,7 +23,7 @@ class BlackWhiteChessPiece extends Piece {
         this.filename = filename;
     }
 
-    render() {
+    image() {
         let color = false;
         if (this.owner.number == 1) color = "white";
         if (this.owner.number == 2) color = "black";

@@ -1,0 +1,14 @@
+#board {
+  border-spacing: 0;
+
+  td {
+    height: 50px;
+    width: 50px;
+    padding: 0;
+
+    &.tile-black {
+      background-color: dimgray;
+    }
+  }
+}
+

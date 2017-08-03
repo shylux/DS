@@ -2,11 +2,7 @@
     {{#each game.board}}
     <tr>
         {{#each this}}
-        <td class="{{this.classes}}">
-            {{#if this.hasPiece}}
-                <img src="{{this.piece.classes}}" />
-            {{/if}}
-        </td>
+            {{#rendercell this}}{{/rendercell}}
         {{/each}}
     </tr>
     {{/each}}

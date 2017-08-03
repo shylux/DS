@@ -1,0 +1,10 @@
+#board {
+  border-spacing: 0; }
+  #board td {
+    height: 50px;
+    width: 50px;
+    padding: 0; }
+    #board td.tile-black {
+      background-color: dimgray; }
+
+/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJhcHAuYnVuZGxlLmNzcyIsInNvdXJjZVJvb3QiOiIifQ==*/
