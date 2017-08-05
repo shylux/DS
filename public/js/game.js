@@ -19,6 +19,14 @@ export default class Game {
                 new Cell(new WhiteTile(), new Pawn(this.player2))
             ]
         ];
+        // save coords on cell for easier lookup
+        for (let y = 0; y < this.board.length; y++) {
+            for (let x = 0; x < this.board[y].length; x++) {
+                let cell = this.board[y][x];
+                cell.x = x;
+                cell.y = y;
+            }
+        }
     }
 
     isFinished() {

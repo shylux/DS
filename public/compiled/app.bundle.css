@@ -3,8 +3,16 @@
   #board td {
     height: 50px;
     width: 50px;
-    padding: 0; }
+    padding: 0;
+    background: no-repeat center;
+    background-size: contain; }
+    #board td.selected {
+      box-shadow: 0 0 5px inset; }
     #board td.tile-black {
       background-color: dimgray; }
+    #board td.piece-pawn-black {
+      background-image: url("/images/chess/chess_piece_2_black_pawn.png"); }
+    #board td.piece-pawn-white {
+      background-image: url("/images/chess/chess_piece_2_white_pawn.png"); }
 
 /*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJhcHAuYnVuZGxlLmNzcyIsInNvdXJjZVJvb3QiOiIifQ==*/

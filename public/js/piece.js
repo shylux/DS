@@ -13,7 +13,7 @@ export default class Piece {
     }
 
     image() {
-        throw "NoImageProvided";
+        return false;
     }
 }
 
@@ -23,12 +23,18 @@ class BlackWhiteChessPiece extends Piece {
         this.filename = filename;
     }
 
-    image() {
-        let color = false;
-        if (this.owner.number == 1) color = "white";
-        if (this.owner.number == 2) color = "black";
-        if (!color) throw "InvalidOwnerNumber";
-        return "./images/chess/" + this.filename.replace("%color%", color);
+    // image() {
+    //     let color = false;
+    //     if (this.owner.number == 1) color = "white";
+    //     if (this.owner.number == 2) color = "black";
+    //     if (!color) throw "InvalidOwnerNumber";
+    //     return "./images/chess/" + this.filename.replace("%color%", color);
+    // }
+
+    get classes() {
+        if (this.owner.number == 1) return ["piece-pawn-white"];
+        if (this.owner.number == 2) return ["piece-pawn-black"];
+        throw "InvalidOwnerNumber";
     }
 }
 

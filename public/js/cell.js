@@ -22,7 +22,7 @@ export default class Cell {
 
     render() {
         let template = require("../templates/cell.hbs");
-        let params = {classes: this.classes};
+        let params = {cell: this, classes: this.classes.join(' ')};
         if (this.hasPiece()) {
             params.image = this.piece.image();
         }

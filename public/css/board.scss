@@ -6,8 +6,21 @@
     width: 50px;
     padding: 0;
 
+    &.selected {
+      box-shadow: 0 0 5px inset;
+    }
+
     &.tile-black {
       background-color: dimgray;
+    }
+
+    background: no-repeat center;
+    background-size: contain;
+    &.piece-pawn-black {
+      background-image: url("/images/chess/chess_piece_2_black_pawn.png");
+    }
+    &.piece-pawn-white {
+      background-image: url("/images/chess/chess_piece_2_white_pawn.png");
     }
   }
 }

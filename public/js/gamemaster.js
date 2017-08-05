@@ -1,10 +1,36 @@
 import Player from './player'
 import Game from './game'
 
-var player1 = new Player("Bisaflor");
-var player2 = new Player("Mewtwo");
-var game = new Game({}, player1, player2);
+class Gamemaster {
+    constructor() {
+        this.localPlayer = new Player("Bisaflor");
+        let player2 = new Player("Mewtwo");
 
-console.log(game.isFinished());
+        this.game = new Game({}, this.localPlayer, player2);
 
-$('body').append(game.render());
+        $('body').append(this.game.render());
+        $('#board td').on('click', function() {
+            gm.handleClick(gm.getCell($(this)));
+        });
+    }
+
+    handleClick(cell) {
+        this.select(cell);
+    }
+
+    getCell(jqcell) {
+        let x = jqcell.data('x');
+        let y = jqcell.data('y');
+        return this.game.board[y][x];
+    }
+    getjqCell(cell) {
+        return $('#board td[data-x="'+cell.x+'"][data-y="'+cell.y+'"]');
+    }
+
+    select(cell) {
+        $('#board .selected').removeClass('selected');
+        this.getjqCell(cell).addClass('selected');
+    }
+}
+
+var gm = new Gamemaster();
