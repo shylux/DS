@@ -2,7 +2,7 @@ var path = require('path');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-module.exports = {
+module.exports = [{
     entry: ['./public/js/gamemaster.js', './public/css/main.scss'],
     output: {
         path: path.resolve(__dirname, 'public/compiled'),
@@ -35,7 +35,8 @@ module.exports = {
     plugins: [
         new webpack.ProvidePlugin({
             $: "jquery",
-            Handlebars: "handlebars"
+            Handlebars: "handlebars",
+            io: "socket.io-client"
         }),
         new ExtractTextPlugin({
             filename: 'app.bundle.css',
@@ -46,4 +47,8 @@ module.exports = {
         colors: true
     },
     devtool: 'inline-source-map'
-};
+},
+{
+    entry: ['./app.js'],
+    output:
+}];

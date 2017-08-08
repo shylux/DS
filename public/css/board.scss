@@ -9,6 +9,9 @@
     &.selected {
       box-shadow: 0 0 5px inset;
     }
+    &.possibleMove {
+      box-shadow: inset 0 0 3px 5px;
+    }
 
     &.tile-black {
       background-color: dimgray;
@@ -21,6 +24,12 @@
     }
     &.piece-pawn-white {
       background-image: url("/images/chess/chess_piece_2_white_pawn.png");
+    }
+    &.piece-rook-black {
+      background-image: url("/images/chess/chess_piece_2_black_rook.png");
+    }
+    &.piece-rook-white {
+      background-image: url("/images/chess/chess_piece_2_white_rook.png");
     }
   }
 }

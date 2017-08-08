@@ -8,12 +8,38 @@ export default class Piece {
         return this._name;
     }
 
-    get classes() {
-        return [];
+    getPossibleMoves(game, x, y) {
+        throw "NotImplemented"
     }
 
-    image() {
-        return false;
+    get class() {
+        throw "NotImplemented";
+    }
+
+    getMovesInDirection(game, x, y, direction) {
+        let pos = {x: x, y: y};
+        let moves = [];
+
+        while (true) {
+            pos.x += direction.x;
+            pos.y += direction.y;
+            try {
+                let cell = game.getCell(pos.x, pos.y);
+                if (!cell.tile.passable) break;
+
+                if (cell.piece) {
+                    if (cell.piece.owner !== this.owner)
+                        moves.push({x: pos.x, y: pos.y});
+                    break;
+                }
+
+                moves.push({x: pos.x, y: pos.y});
+            } catch(err) {
+                if (err !== "OutsideOfBoard") throw err;
+                break;
+            }
+        }
+        return moves;
     }
 }
 
@@ -23,23 +49,66 @@ class BlackWhiteChessPiece extends Piece {
         this.filename = filename;
     }
 
-    // image() {
-    //     let color = false;
-    //     if (this.owner.number == 1) color = "white";
-    //     if (this.owner.number == 2) color = "black";
-    //     if (!color) throw "InvalidOwnerNumber";
-    //     return "./images/chess/" + this.filename.replace("%color%", color);
-    // }
-
-    get classes() {
-        if (this.owner.number == 1) return ["piece-pawn-white"];
-        if (this.owner.number == 2) return ["piece-pawn-black"];
+    get class() {
+        if (this.owner.number === 1) return "white";
+        if (this.owner.number === 2) return "black";
         throw "InvalidOwnerNumber";
     }
 }
 
 export class Pawn extends BlackWhiteChessPiece {
     constructor(owner) {
-        super(owner, "Pawn", "chess_piece_2_%color%_pawn.png");
+        super(owner, "Pawn");
+    }
+
+    get class() {
+        return 'piece-pawn-' + super.class;
+    }
+
+    getPossibleMoves(game, x, y) {
+        let relativeMoves = [
+            {x: 1, y: 0},
+            {x: -1, y: 0},
+            {x: 0, y: 1},
+            {x: 0, y: -1}
+        ];
+        let moves = [];
+
+        relativeMoves.forEach(function (move) {
+            try {
+                let cell = game.getCell(x + move.x, y + move.y);
+                if (cell.tile.passable) moves.push({x: x + move.x, y: y + move.y});
+            } catch(err) {
+                if (err !== "OutsideOfBoard") throw err;
+            }
+        });
+        return moves;
+    }
+}
+
+export class Rook extends BlackWhiteChessPiece {
+    constructor(owner) {
+        super(owner, "Rook");
+    }
+
+    get class() {
+        return 'piece-rook-' + super.class;
+    }
+
+    getPossibleMoves(game, x, y) {
+        let directions = [
+            {x: 1, y: 0},
+            {x: -1, y: 0},
+            {x: 0, y: 1},
+            {x: 0, y: -1}
+        ];
+        let moves = [];
+
+        for (let d = 0; d < directions.length; d++) {
+            let direction = directions[d];
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, direction));
+        }
+
+        return moves;
     }
 }

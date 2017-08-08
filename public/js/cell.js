@@ -6,26 +6,19 @@ export default class Cell {
         this.y = -1;
     }
 
-    hasPiece() {
-        return this.piece !== undefined;
-    }
-
     get tile() {
         return this._tile;
     }
 
     get classes() {
         let cls = this.tile.classes;
-        if (this.hasPiece()) cls = cls.concat(this.piece.classes);
+        if (this.piece) cls.push(this.piece.class);
         return cls;
     }
 
     render() {
         let template = require("../templates/cell.hbs");
         let params = {cell: this, classes: this.classes.join(' ')};
-        if (this.hasPiece()) {
-            params.image = this.piece.image();
-        }
         return template(params);
     }
 }

@@ -1,5 +1,6 @@
 export default class Tile {
     constructor() {
+        this.passable = true;
     }
 
     get classes() {
@@ -7,13 +8,13 @@ export default class Tile {
     }
 }
 
-export class BlackTile {
+export class BlackTile extends Tile {
     get classes() {
         return ["tile-black"];
     }
 }
 
-export class WhiteTile {
+export class WhiteTile extends Tile {
     get classes() {
         return ["tile-white"];
     }
