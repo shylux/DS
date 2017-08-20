@@ -9,8 +9,10 @@
   "dependencies": {
     "babel-loader": "^7.1.1",
     "babel-preset-latest": "^6.24.1",
+    "babel-runtime": "^6.26.0",
+    "bufferutil": "^3.0.2",
     "css-loader": "^0.28.4",
-    "express": "*",
+    "express": "^4.15.4",
     "extract-text-webpack-plugin": "^3.0.0",
     "handlebars": "^4.0.10",
     "handlebars-loader": "^1.5.0",
@@ -18,11 +20,15 @@
     "jquery": "^3.2.1",
     "node": "*",
     "node-sass": "^4.5.3",
+    "request": "^2.81.0",
     "sass-loader": "^6.0.6",
     "socket.io": "^2.0.3",
-    "webpack": "^3.4.1"
+    "utf-8-validate": "^3.0.3",
+    "webpack": "^3.5.5",
+    "webpack-node-externals": "^1.6.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.0.0"
+    "babel-cli": "^6.0.0",
+    "nodemon": "^1.11.0"
   }
 }

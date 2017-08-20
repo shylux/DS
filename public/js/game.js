@@ -26,11 +26,15 @@ export default class Game {
     }
 
     move(sourceCell, targetCell) {
+        if (!sourceCell.piece) throw 'NoPieceToMove';
+
         let logEntry = {
             action: 'move',
+            movedPieceClass: sourceCell.piece.class,
             source: {x: sourceCell.x, y: sourceCell.y},
             target: {x: targetCell.x, y: targetCell.y},
         };
+
         if (targetCell.piece)
             logEntry.killedPiece = targetCell.piece;
 

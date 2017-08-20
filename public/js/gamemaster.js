@@ -13,6 +13,14 @@ class Gamemaster {
         $('#board td').on('click', function() {
             gm.handleClick(gm.getCell($(this)));
         });
+
+        this.socket = io();
+        this.socket.on('make move', function (data) {
+            console.log(data);
+            let sourceCell = this.game.board[data.source.y][data.source.x];
+            this.game.move(sourceCell, data.target);
+            this.executeAction(data);
+        }.bind(this))
     }
 
     handleClick(cell) {
@@ -20,15 +28,14 @@ class Gamemaster {
         if (this.getjqCell(cell).hasClass('possibleMove')) {
             let sourceJqCell = $('#board td.selected');
             let sourceCell = this.getCell(sourceJqCell);
-            let targetJqCell = this.getjqCell(cell);
-            let pieceClass = sourceCell.piece.class;
 
             let logEntry = this.game.move(sourceCell, cell);
-            sourceJqCell.removeClass(pieceClass);
-            if (logEntry.killedPiece)
-                targetJqCell.removeClass(logEntry.killedPiece.class);
-            targetJqCell.addClass(pieceClass);
+
+            this.executeAction(logEntry);
             this.deselectPiece();
+
+            this.socket.emit('make move', logEntry);
+
             return;
         }
 
@@ -41,6 +48,18 @@ class Gamemaster {
                 // selected his own piece
                 this.selectPiece(cell);
             }
+        }
+    }
+
+    executeAction(logEntry) {
+        if (logEntry.action === 'move') {
+            let sourceJqCell = this.getjqCell(logEntry.source);
+            let targetJqCell = this.getjqCell(logEntry.target);
+
+            sourceJqCell.removeClass(logEntry.movedPieceClass);
+            if (logEntry.killedPiece)
+                targetJqCell.removeClass(logEntry.killedPiece.class);
+            targetJqCell.addClass(logEntry.movedPieceClass);
         }
     }
 
@@ -73,5 +92,3 @@ class Gamemaster {
 }
 
 var gm = new Gamemaster();
-
-var socket = io();
