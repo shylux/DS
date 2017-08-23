@@ -5,6 +5,7 @@ import {WhiteTile, BlackTile} from './tile';
 export default class Game {
     constructor(rules, player1, player2) {
         this.rules = rules;
+        this.gameLog = [];
         this.player1 = player1;
         this.player1.number = 1;
         this.player2 = player2;
@@ -25,7 +26,7 @@ export default class Game {
         }
     }
 
-    move(sourceCell, targetCell) {
+    prepareMove(sourceCell, targetCell) {
         if (!sourceCell.piece) throw 'NoPieceToMove';
 
         let logEntry = {
@@ -36,12 +37,18 @@ export default class Game {
         };
 
         if (targetCell.piece)
-            logEntry.killedPiece = targetCell.piece;
-
-        targetCell.piece = sourceCell.piece;
-        delete sourceCell.piece;
+            logEntry.killedPieceClass = targetCell.piece.class;
 
         return logEntry;
+    }
+
+    execute(logEntry) {
+        if (logEntry.action === 'move') {
+            let sourceCell = this.getCell(logEntry.source);
+            let targetCell = this.getCell(logEntry.target);
+            targetCell.piece = sourceCell.piece;
+            delete sourceCell.piece;
+        }
     }
 
     getPossibleMoves(cell) {
@@ -49,6 +56,12 @@ export default class Game {
     }
 
     getCell(x, y) {
+        // pass only the x param to be handled as object: {x: 1, y: 1}
+        if (y === undefined) {
+            y = x.y;
+            x = x.x;
+        }
+
         if (y < 0 || y >= this.board.length) throw "OutsideOfBoard";
         let row = this.board[y];
         if (x < 0 || x >= row.length) throw "OutsideOfBoard";

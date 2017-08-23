@@ -452,8 +452,7 @@ var GameServer = function () {
             socket.on('make move', function (data) {
                 console.log(data);
 
-                var sourceCell = this.game.board[data.source.y][data.source.x];
-                this.game.move(sourceCell, data.target);
+                this.game.execute(data);
                 for (var i = 0; i < this.players.length; i++) {
                     if (this.players[i] === socket) continue;
                     this.players[i].emit('make move', data);
@@ -524,6 +523,7 @@ var Game = function () {
         _classCallCheck(this, Game);
 
         this.rules = rules;
+        this.gameLog = [];
         this.player1 = player1;
         this.player1.number = 1;
         this.player2 = player2;
@@ -545,8 +545,8 @@ var Game = function () {
     }
 
     _createClass(Game, [{
-        key: 'move',
-        value: function move(sourceCell, targetCell) {
+        key: 'prepareMove',
+        value: function prepareMove(sourceCell, targetCell) {
             if (!sourceCell.piece) throw 'NoPieceToMove';
 
             var logEntry = {
@@ -556,12 +556,19 @@ var Game = function () {
                 target: { x: targetCell.x, y: targetCell.y }
             };
 
-            if (targetCell.piece) logEntry.killedPiece = targetCell.piece;
-
-            targetCell.piece = sourceCell.piece;
-            delete sourceCell.piece;
+            if (targetCell.piece) logEntry.killedPieceClass = targetCell.piece.class;
 
             return logEntry;
+        }
+    }, {
+        key: 'execute',
+        value: function execute(logEntry) {
+            if (logEntry.action === 'move') {
+                var sourceCell = this.getCell(logEntry.source);
+                var targetCell = this.getCell(logEntry.target);
+                targetCell.piece = sourceCell.piece;
+                delete sourceCell.piece;
+            }
         }
     }, {
         key: 'getPossibleMoves',
@@ -571,6 +578,12 @@ var Game = function () {
     }, {
         key: 'getCell',
         value: function getCell(x, y) {
+            // pass only the x param to be handled as object: {x: 1, y: 1}
+            if (y === undefined) {
+                y = x.y;
+                x = x.x;
+            }
+
             if (y < 0 || y >= this.board.length) throw "OutsideOfBoard";
             var row = this.board[y];
             if (x < 0 || x >= row.length) throw "OutsideOfBoard";

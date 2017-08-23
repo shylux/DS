@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "server": "node app",
-    "webpack": "./node_modules/.bin/webpack --watch"
+    "webpack": "./node_modules/.bin/webpack --watch nodemon"
   },
   "dependencies": {
     "babel-loader": "^7.1.1",

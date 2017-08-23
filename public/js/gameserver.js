@@ -14,8 +14,7 @@ export default class GameServer {
         socket.on('make move', function(data) {
             console.log(data);
 
-            let sourceCell = this.game.board[data.source.y][data.source.x];
-            this.game.move(sourceCell, data.target);
+            this.game.execute(data);
             for (let i = 0; i < this.players.length; i++) {
                 if (this.players[i] === socket) continue;
                 this.players[i].emit('make move', data);

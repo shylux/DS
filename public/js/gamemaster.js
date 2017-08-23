@@ -17,8 +17,7 @@ class Gamemaster {
         this.socket = io();
         this.socket.on('make move', function (data) {
             console.log(data);
-            let sourceCell = this.game.board[data.source.y][data.source.x];
-            this.game.move(sourceCell, data.target);
+            this.game.execute(data);
             this.executeAction(data);
         }.bind(this))
     }
@@ -29,8 +28,9 @@ class Gamemaster {
             let sourceJqCell = $('#board td.selected');
             let sourceCell = this.getCell(sourceJqCell);
 
-            let logEntry = this.game.move(sourceCell, cell);
+            let logEntry = this.game.prepareMove(sourceCell, cell);
 
+            this.game.execute(logEntry);
             this.executeAction(logEntry);
             this.deselectPiece();
 
@@ -57,8 +57,8 @@ class Gamemaster {
             let targetJqCell = this.getjqCell(logEntry.target);
 
             sourceJqCell.removeClass(logEntry.movedPieceClass);
-            if (logEntry.killedPiece)
-                targetJqCell.removeClass(logEntry.killedPiece.class);
+            if (logEntry.killedPieceClass)
+                targetJqCell.removeClass(logEntry.killedPieceClass);
             targetJqCell.addClass(logEntry.movedPieceClass);
         }
     }
