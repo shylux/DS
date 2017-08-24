@@ -81,6 +81,7 @@ export default class Game {
             let targetCell = this.getCell(logEntry.target);
             targetCell.piece = sourceCell.piece;
             delete sourceCell.piece;
+            targetCell.piece.hasMoved = true;
         }
 
         this.gameLog.push(logEntry);

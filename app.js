@@ -610,6 +610,7 @@ var Game = function () {
                 var targetCell = this.getCell(logEntry.target);
                 targetCell.piece = sourceCell.piece;
                 delete sourceCell.piece;
+                targetCell.piece.hasMoved = true;
             }
 
             this.gameLog.push(logEntry);
@@ -1674,6 +1675,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var STRAIGHT_DIRECTIONS = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
 var DIAGONAL_DIRECTIONS = [{ x: 1, y: 1 }, { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }];
 var ALL_DIRECTIONS = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 1 }, { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }];
+var MOVING_BEHAVIORS = {
+    // default: stops at first piece with option to kill an enemy piece
+    HITTING: 0,
+    // stopping is like hitting but without the option to kill (pawn)
+    STOPPING: 1
+};
 
 var Piece = function () {
     function Piece(owner, name) {
@@ -1681,6 +1688,7 @@ var Piece = function () {
 
         this.owner = owner;
         this._name = name;
+        this.hasMoved = false;
     }
 
     _createClass(Piece, [{
@@ -1690,7 +1698,10 @@ var Piece = function () {
         }
     }, {
         key: "getMovesInDirection",
-        value: function getMovesInDirection(game, x, y, direction, maxDistance) {
+        value: function getMovesInDirection(game, x, y, direction) {
+            var maxDistance = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+            var behaviour = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : MOVING_BEHAVIORS.HITTING;
+
             var pos = { x: x, y: y };
             var moves = [];
             var distance = 0;
@@ -1706,7 +1717,7 @@ var Piece = function () {
                     if (!cell.tile.passable) break;
 
                     if (cell.piece) {
-                        if (cell.piece.owner !== this.owner) moves.push({ x: pos.x, y: pos.y });
+                        if (behaviour !== MOVING_BEHAVIORS.STOPPING && cell.piece.owner !== this.owner) moves.push({ x: pos.x, y: pos.y });
                         break;
                     }
 
@@ -1784,7 +1795,23 @@ var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
         value: function getPossibleMoves(game, x, y) {
             var moves = [];
 
-            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, this.getOwnerDirection(), 1));
+            // a pawn can move two spaces if it hasn't moved yet
+            var distance = this.hasMoved ? 1 : 2;
+
+            // move in front
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, this.getOwnerDirection(), distance, MOVING_BEHAVIORS.STOPPING));
+
+            // diagonal moves - only available if the move can kill an opposing piece
+            var hittingMoves = [{ x: 1, y: this.getOwnerDirection().y }, { x: -1, y: this.getOwnerDirection().y }];
+            for (var d = 0; d < hittingMoves.length; d++) {
+                var possibleHittingMove = this.getMovesInDirection(game, x, y, hittingMoves[d], 1);
+                if (possibleHittingMove.length === 0) continue;
+                var possibleMove = possibleHittingMove[0];
+                // check for opposing piece
+                if (game.getCell(possibleMove).piece) moves.push(possibleMove);
+            }
+
+            // TODO: en passent - oder o eifach nid..
 
             return moves;
         }

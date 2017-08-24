@@ -20,11 +20,18 @@ const ALL_DIRECTIONS = [
     {x: -1, y: 1},
     {x: 1, y: -1}
 ];
+const MOVING_BEHAVIORS = {
+    // default: stops at first piece with option to kill an enemy piece
+    HITTING: 0,
+    // stopping is like hitting but without the option to kill (pawn)
+    STOPPING: 1
+};
 
 class Piece {
     constructor(owner, name) {
         this.owner = owner;
         this._name = name;
+        this.hasMoved = false;
     }
 
     get name() {
@@ -39,7 +46,7 @@ class Piece {
         throw "NotImplemented";
     }
 
-    getMovesInDirection(game, x, y, direction, maxDistance) {
+    getMovesInDirection(game, x, y, direction, maxDistance = false, behaviour = MOVING_BEHAVIORS.HITTING) {
         let pos = {x: x, y: y};
         let moves = [];
         let distance = 0;
@@ -55,7 +62,7 @@ class Piece {
                 if (!cell.tile.passable) break;
 
                 if (cell.piece) {
-                    if (cell.piece.owner !== this.owner)
+                    if (behaviour !== MOVING_BEHAVIORS.STOPPING && cell.piece.owner !== this.owner)
                         moves.push({x: pos.x, y: pos.y});
                     break;
                 }
@@ -107,7 +114,26 @@ export class Pawn extends BlackWhiteChessPiece {
     getPossibleMoves(game, x, y) {
         let moves = [];
 
-        Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, this.getOwnerDirection(), 1));
+        // a pawn can move two spaces if it hasn't moved yet
+        let distance = (this.hasMoved ? 1 : 2);
+
+        // move in front
+        Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, this.getOwnerDirection(), distance, MOVING_BEHAVIORS.STOPPING));
+
+        // diagonal moves - only available if the move can kill an opposing piece
+        let hittingMoves = [
+            {x: 1, y: this.getOwnerDirection().y},
+            {x: -1, y: this.getOwnerDirection().y},
+        ];
+        for (let d = 0; d < hittingMoves.length; d++) {
+            let possibleHittingMove = this.getMovesInDirection(game, x, y, hittingMoves[d], 1);
+            if (possibleHittingMove.length === 0) continue;
+            let possibleMove = possibleHittingMove[0];
+            // check for opposing piece
+            if (game.getCell(possibleMove).piece) moves.push(possibleMove);
+        }
+
+        // TODO: en passent - oder o eifach nid..
 
         return moves;
     }
