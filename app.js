@@ -1720,6 +1720,18 @@ var Piece = function () {
             return moves;
         }
     }, {
+        key: "getOwnerDirection",
+        value: function getOwnerDirection() {
+            switch (this.owner.number) {
+                case 1:
+                    return { x: 0, y: -1 };
+                case 2:
+                    return { x: 0, y: 1 };
+                default:
+                    throw 'UnknownOwnerDirection';
+            }
+        }
+    }, {
         key: "name",
         get: function get() {
             return this._name;
@@ -1733,8 +1745,6 @@ var Piece = function () {
 
     return Piece;
 }();
-
-exports.default = Piece;
 
 var BlackWhiteChessPiece = function (_Piece) {
     _inherits(BlackWhiteChessPiece, _Piece);
@@ -1774,9 +1784,8 @@ var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
         value: function getPossibleMoves(game, x, y) {
             var moves = [];
 
-            for (var d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
-                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d], 1));
-            }
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, this.getOwnerDirection(), 1));
+
             return moves;
         }
     }, {

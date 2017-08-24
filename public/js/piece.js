@@ -21,7 +21,7 @@ const ALL_DIRECTIONS = [
     {x: 1, y: -1}
 ];
 
-export default class Piece {
+class Piece {
     constructor(owner, name) {
         this.owner = owner;
         this._name = name;
@@ -69,6 +69,17 @@ export default class Piece {
         }
         return moves;
     }
+
+    getOwnerDirection() {
+        switch(this.owner.number) {
+            case 1:
+                return {x: 0, y: -1};
+            case 2:
+                return {x: 0, y: 1};
+            default:
+                throw 'UnknownOwnerDirection';
+        }
+    }
 }
 
 class BlackWhiteChessPiece extends Piece {
@@ -96,9 +107,8 @@ export class Pawn extends BlackWhiteChessPiece {
     getPossibleMoves(game, x, y) {
         let moves = [];
 
-        for (let d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
-            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d], 1));
-        }
+        Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, this.getOwnerDirection(), 1));
+
         return moves;
     }
 }
