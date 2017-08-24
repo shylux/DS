@@ -1,3 +1,26 @@
+const STRAIGHT_DIRECTIONS = [
+    {x: 1, y: 0},
+    {x: -1, y: 0},
+    {x: 0, y: 1},
+    {x: 0, y: -1}
+];
+const DIAGONAL_DIRECTIONS = [
+    {x: 1, y: 1},
+    {x: -1, y: -1},
+    {x: -1, y: 1},
+    {x: 1, y: -1}
+];
+const ALL_DIRECTIONS = [
+    {x: 1, y: 0},
+    {x: -1, y: 0},
+    {x: 0, y: 1},
+    {x: 0, y: -1},
+    {x: 1, y: 1},
+    {x: -1, y: -1},
+    {x: -1, y: 1},
+    {x: 1, y: -1}
+];
+
 export default class Piece {
     constructor(owner, name) {
         this.owner = owner;
@@ -16,11 +39,15 @@ export default class Piece {
         throw "NotImplemented";
     }
 
-    getMovesInDirection(game, x, y, direction) {
+    getMovesInDirection(game, x, y, direction, maxDistance) {
         let pos = {x: x, y: y};
         let moves = [];
+        let distance = 0;
 
         while (true) {
+            distance++;
+            if (distance > maxDistance) break;
+
             pos.x += direction.x;
             pos.y += direction.y;
             try {
@@ -35,6 +62,7 @@ export default class Piece {
 
                 moves.push({x: pos.x, y: pos.y});
             } catch(err) {
+                // break if OutsideOfBoard. else its an unexpected error
                 if (err !== "OutsideOfBoard") throw err;
                 break;
             }
@@ -66,22 +94,11 @@ export class Pawn extends BlackWhiteChessPiece {
     }
 
     getPossibleMoves(game, x, y) {
-        let relativeMoves = [
-            {x: 1, y: 0},
-            {x: -1, y: 0},
-            {x: 0, y: 1},
-            {x: 0, y: -1}
-        ];
         let moves = [];
 
-        relativeMoves.forEach(function (move) {
-            try {
-                let cell = game.getCell(x + move.x, y + move.y);
-                if (cell.tile.passable) moves.push({x: x + move.x, y: y + move.y});
-            } catch(err) {
-                if (err !== "OutsideOfBoard") throw err;
-            }
-        });
+        for (let d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d], 1));
+        }
         return moves;
     }
 }
@@ -96,17 +113,100 @@ export class Rook extends BlackWhiteChessPiece {
     }
 
     getPossibleMoves(game, x, y) {
-        let directions = [
-            {x: 1, y: 0},
-            {x: -1, y: 0},
-            {x: 0, y: 1},
-            {x: 0, y: -1}
+        let moves = [];
+
+        for (let d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d]));
+        }
+
+        return moves;
+    }
+}
+
+export class Knight extends BlackWhiteChessPiece {
+    constructor(owner) {
+        super(owner, "Knight");
+    }
+
+    get class() {
+        return 'piece-knight-' + super.class;
+    }
+
+    getPossibleMoves(game, x, y) {
+        let relativeMoves = [
+            {x: 2, y: 1},
+            {x: 2, y: -1},
+            {x: -2, y: 1},
+            {x: -2, y: -1},
+            {x: 1, y: 2},
+            {x: -1, y: 2},
+            {x: 1, y: -2},
+            {x: -1, y: -2},
         ];
         let moves = [];
 
-        for (let d = 0; d < directions.length; d++) {
-            let direction = directions[d];
-            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, direction));
+        for (let d = 0; d < relativeMoves.length; d++) {
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, relativeMoves[d], 1));
+        }
+
+        return moves;
+    }
+}
+
+export class Bishop extends BlackWhiteChessPiece {
+    constructor(owner) {
+        super(owner, "Bishop");
+    }
+
+    get class() {
+        return 'piece-bishop-' + super.class;
+    }
+
+    getPossibleMoves(game, x, y) {
+        let moves = [];
+
+        for (let d = 0; d < DIAGONAL_DIRECTIONS.length; d++) {
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, DIAGONAL_DIRECTIONS[d]));
+        }
+
+        return moves;
+    }
+}
+
+export class Queen extends BlackWhiteChessPiece {
+    constructor(owner) {
+        super(owner, "Queen");
+    }
+
+    get class() {
+        return 'piece-queen-' + super.class;
+    }
+
+    getPossibleMoves(game, x, y) {
+        let moves = [];
+
+        for (let d = 0; d < ALL_DIRECTIONS.length; d++) {
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d]));
+        }
+
+        return moves;
+    }
+}
+
+export class King extends BlackWhiteChessPiece {
+    constructor(owner) {
+        super(owner, "King");
+    }
+
+    get class() {
+        return 'piece-king-' + super.class;
+    }
+
+    getPossibleMoves(game, x, y) {
+        let moves = [];
+
+        for (let d = 0; d < ALL_DIRECTIONS.length; d++) {
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d], 1));
         }
 
         return moves;

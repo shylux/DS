@@ -17,19 +17,25 @@
       background-color: dimgray;
     }
 
-    background: no-repeat center;
-    background-size: contain;
-    &.piece-pawn-black {
-      background-image: url("/images/chess/chess_piece_2_black_pawn.png");
+    &:before {
+      content: '';
+      display: block;
+      height: 80%;
+      width: 80%;
+      margin: 10%;
+      background: no-repeat center;
+      background-size: contain;
     }
-    &.piece-pawn-white {
-      background-image: url("/images/chess/chess_piece_2_white_pawn.png");
-    }
-    &.piece-rook-black {
-      background-image: url("/images/chess/chess_piece_2_black_rook.png");
-    }
-    &.piece-rook-white {
-      background-image: url("/images/chess/chess_piece_2_white_rook.png");
+
+    $chess-pieces: pawn rook knight bishop queen king;
+
+    @each $piece in $chess-pieces {
+      &.piece-#{$piece}-black:before {
+        background-image: url("/images/chess/chess_piece_2_black_#{$piece}.png");
+      }
+      &.piece-#{$piece}-white:before {
+        background-image: url("/images/chess/chess_piece_2_white_#{$piece}.png");
+      }
     }
   }
 }

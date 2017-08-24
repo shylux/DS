@@ -11,6 +11,11 @@ export default class GameServer {
     connect(socket) {
         this.players.push(socket);
 
+        // push game state
+        for (let i = 0; i < this.game.gameLog.length; i++) {
+            socket.emit('make move', this.game.gameLog[i]);
+        }
+
         socket.on('make move', function(data) {
             console.log(data);
 

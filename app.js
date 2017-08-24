@@ -449,13 +449,18 @@ var GameServer = function () {
         value: function connect(socket) {
             this.players.push(socket);
 
+            // push game state
+            for (var i = 0; i < this.game.gameLog.length; i++) {
+                socket.emit('make move', this.game.gameLog[i]);
+            }
+
             socket.on('make move', function (data) {
                 console.log(data);
 
                 this.game.execute(data);
-                for (var i = 0; i < this.players.length; i++) {
-                    if (this.players[i] === socket) continue;
-                    this.players[i].emit('make move', data);
+                for (var _i = 0; _i < this.players.length; _i++) {
+                    if (this.players[_i] === socket) continue;
+                    this.players[_i].emit('make move', data);
                 }
             }.bind(this));
 
@@ -531,18 +536,40 @@ var Game = function () {
 
         this.board = this.generateCheckedBoard(8, 8);
 
-        this.board[0][0].piece = new _piece.Pawn(this.player2);
-        this.board[5][5].piece = new _piece.Rook(this.player1);
+        for (var x = 0; x < 8; x++) {
+            this.board[1][x].piece = new _piece.Pawn(this.player2);
+            this.board[6][x].piece = new _piece.Pawn(this.player1);
+        }
+        this.board[0][0].piece = new _piece.Rook(this.player2);
+        this.board[0][7].piece = new _piece.Rook(this.player2);
+        this.board[7][0].piece = new _piece.Rook(this.player1);
+        this.board[7][7].piece = new _piece.Rook(this.player1);
+        this.board[0][1].piece = new _piece.Knight(this.player2);
+        this.board[0][6].piece = new _piece.Knight(this.player2);
+        this.board[7][1].piece = new _piece.Knight(this.player1);
+        this.board[7][6].piece = new _piece.Knight(this.player1);
+        this.board[0][2].piece = new _piece.Bishop(this.player2);
+        this.board[0][5].piece = new _piece.Bishop(this.player2);
+        this.board[7][2].piece = new _piece.Bishop(this.player1);
+        this.board[7][5].piece = new _piece.Bishop(this.player1);
+        this.board[0][4].piece = new _piece.Queen(this.player2);
+        this.board[7][4].piece = new _piece.Queen(this.player1);
+        this.board[0][3].piece = new _piece.King(this.player2);
+        this.board[7][3].piece = new _piece.King(this.player1);
 
         // save coords on cell for easier lookup
         for (var y = 0; y < this.board.length; y++) {
-            for (var x = 0; x < this.board[y].length; x++) {
-                var cell = this.board[y][x];
-                cell.x = x;
+            for (var _x = 0; _x < this.board[y].length; _x++) {
+                var cell = this.board[y][_x];
+                cell.x = _x;
                 cell.y = y;
             }
         }
     }
+
+    // generates a logEntry for a move
+    // this logEntry can then be executed by all players
+
 
     _createClass(Game, [{
         key: 'prepareMove',
@@ -560,15 +587,32 @@ var Game = function () {
 
             return logEntry;
         }
+
+        // checks if a move is valid
+        // TODO: check with piece class
+
+    }, {
+        key: 'checkMove',
+        value: function checkMove(logEntry) {
+            var sourceCell = this.getCell(logEntry.source);
+            var targetCell = this.getCell(logEntry.target);
+            if (!sourceCell.piece) throw 'NoPieceToMove';
+            if (sourceCell.piece.class !== logEntry.movedPieceClass) throw 'OutOfSyncError: wrong source piece class';
+            if (logEntry.killedPieceClass && logEntry.killedPieceClass !== targetCell.piece.class) throw 'OutOfSyncError: wrong killed piece class';
+        }
     }, {
         key: 'execute',
         value: function execute(logEntry) {
             if (logEntry.action === 'move') {
+                this.checkMove(logEntry);
+
                 var sourceCell = this.getCell(logEntry.source);
                 var targetCell = this.getCell(logEntry.target);
                 targetCell.piece = sourceCell.piece;
                 delete sourceCell.piece;
             }
+
+            this.gameLog.push(logEntry);
         }
     }, {
         key: 'getPossibleMoves',
@@ -1627,6 +1671,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var STRAIGHT_DIRECTIONS = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
+var DIAGONAL_DIRECTIONS = [{ x: 1, y: 1 }, { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }];
+var ALL_DIRECTIONS = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 1 }, { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }];
+
 var Piece = function () {
     function Piece(owner, name) {
         _classCallCheck(this, Piece);
@@ -1642,11 +1690,15 @@ var Piece = function () {
         }
     }, {
         key: "getMovesInDirection",
-        value: function getMovesInDirection(game, x, y, direction) {
+        value: function getMovesInDirection(game, x, y, direction, maxDistance) {
             var pos = { x: x, y: y };
             var moves = [];
+            var distance = 0;
 
             while (true) {
+                distance++;
+                if (distance > maxDistance) break;
+
                 pos.x += direction.x;
                 pos.y += direction.y;
                 try {
@@ -1660,6 +1712,7 @@ var Piece = function () {
 
                     moves.push({ x: pos.x, y: pos.y });
                 } catch (err) {
+                    // break if OutsideOfBoard. else its an unexpected error
                     if (err !== "OutsideOfBoard") throw err;
                     break;
                 }
@@ -1719,17 +1772,11 @@ var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
     _createClass(Pawn, [{
         key: "getPossibleMoves",
         value: function getPossibleMoves(game, x, y) {
-            var relativeMoves = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
             var moves = [];
 
-            relativeMoves.forEach(function (move) {
-                try {
-                    var cell = game.getCell(x + move.x, y + move.y);
-                    if (cell.tile.passable) moves.push({ x: x + move.x, y: y + move.y });
-                } catch (err) {
-                    if (err !== "OutsideOfBoard") throw err;
-                }
-            });
+            for (var d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d], 1));
+            }
             return moves;
         }
     }, {
@@ -1754,12 +1801,10 @@ var Rook = exports.Rook = function (_BlackWhiteChessPiece2) {
     _createClass(Rook, [{
         key: "getPossibleMoves",
         value: function getPossibleMoves(game, x, y) {
-            var directions = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
             var moves = [];
 
-            for (var d = 0; d < directions.length; d++) {
-                var direction = directions[d];
-                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, direction));
+            for (var d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d]));
             }
 
             return moves;
@@ -1772,6 +1817,127 @@ var Rook = exports.Rook = function (_BlackWhiteChessPiece2) {
     }]);
 
     return Rook;
+}(BlackWhiteChessPiece);
+
+var Knight = exports.Knight = function (_BlackWhiteChessPiece3) {
+    _inherits(Knight, _BlackWhiteChessPiece3);
+
+    function Knight(owner) {
+        _classCallCheck(this, Knight);
+
+        return _possibleConstructorReturn(this, (Knight.__proto__ || Object.getPrototypeOf(Knight)).call(this, owner, "Knight"));
+    }
+
+    _createClass(Knight, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var relativeMoves = [{ x: 2, y: 1 }, { x: 2, y: -1 }, { x: -2, y: 1 }, { x: -2, y: -1 }, { x: 1, y: 2 }, { x: -1, y: 2 }, { x: 1, y: -2 }, { x: -1, y: -2 }];
+            var moves = [];
+
+            for (var d = 0; d < relativeMoves.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, relativeMoves[d], 1));
+            }
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-knight-' + _get(Knight.prototype.__proto__ || Object.getPrototypeOf(Knight.prototype), "class", this);
+        }
+    }]);
+
+    return Knight;
+}(BlackWhiteChessPiece);
+
+var Bishop = exports.Bishop = function (_BlackWhiteChessPiece4) {
+    _inherits(Bishop, _BlackWhiteChessPiece4);
+
+    function Bishop(owner) {
+        _classCallCheck(this, Bishop);
+
+        return _possibleConstructorReturn(this, (Bishop.__proto__ || Object.getPrototypeOf(Bishop)).call(this, owner, "Bishop"));
+    }
+
+    _createClass(Bishop, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var moves = [];
+
+            for (var d = 0; d < DIAGONAL_DIRECTIONS.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, DIAGONAL_DIRECTIONS[d]));
+            }
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-bishop-' + _get(Bishop.prototype.__proto__ || Object.getPrototypeOf(Bishop.prototype), "class", this);
+        }
+    }]);
+
+    return Bishop;
+}(BlackWhiteChessPiece);
+
+var Queen = exports.Queen = function (_BlackWhiteChessPiece5) {
+    _inherits(Queen, _BlackWhiteChessPiece5);
+
+    function Queen(owner) {
+        _classCallCheck(this, Queen);
+
+        return _possibleConstructorReturn(this, (Queen.__proto__ || Object.getPrototypeOf(Queen)).call(this, owner, "Queen"));
+    }
+
+    _createClass(Queen, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var moves = [];
+
+            for (var d = 0; d < ALL_DIRECTIONS.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d]));
+            }
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-queen-' + _get(Queen.prototype.__proto__ || Object.getPrototypeOf(Queen.prototype), "class", this);
+        }
+    }]);
+
+    return Queen;
+}(BlackWhiteChessPiece);
+
+var King = exports.King = function (_BlackWhiteChessPiece6) {
+    _inherits(King, _BlackWhiteChessPiece6);
+
+    function King(owner) {
+        _classCallCheck(this, King);
+
+        return _possibleConstructorReturn(this, (King.__proto__ || Object.getPrototypeOf(King)).call(this, owner, "King"));
+    }
+
+    _createClass(King, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var moves = [];
+
+            for (var d = 0; d < ALL_DIRECTIONS.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d], 1));
+            }
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-king-' + _get(King.prototype.__proto__ || Object.getPrototypeOf(King.prototype), "class", this);
+        }
+    }]);
+
+    return King;
 }(BlackWhiteChessPiece);
 
 /***/ }),

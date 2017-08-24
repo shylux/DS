@@ -1,5 +1,5 @@
 import Cell from './cell'
-import {Pawn, Rook} from './piece'
+import {Pawn, Rook, Knight, Bishop, Queen, King} from './piece'
 import {WhiteTile, BlackTile} from './tile';
 
 export default class Game {
@@ -13,8 +13,26 @@ export default class Game {
 
         this.board = this.generateCheckedBoard(8, 8);
 
-        this.board[0][0].piece = new Pawn(this.player2);
-        this.board[5][5].piece = new Rook(this.player1);
+        for (let x = 0; x < 8; x++) {
+            this.board[1][x].piece = new Pawn(this.player2);
+            this.board[6][x].piece = new Pawn(this.player1);
+        }
+        this.board[0][0].piece = new Rook(this.player2);
+        this.board[0][7].piece = new Rook(this.player2);
+        this.board[7][0].piece = new Rook(this.player1);
+        this.board[7][7].piece = new Rook(this.player1);
+        this.board[0][1].piece = new Knight(this.player2);
+        this.board[0][6].piece = new Knight(this.player2);
+        this.board[7][1].piece = new Knight(this.player1);
+        this.board[7][6].piece = new Knight(this.player1);
+        this.board[0][2].piece = new Bishop(this.player2);
+        this.board[0][5].piece = new Bishop(this.player2);
+        this.board[7][2].piece = new Bishop(this.player1);
+        this.board[7][5].piece = new Bishop(this.player1);
+        this.board[0][4].piece = new Queen(this.player2);
+        this.board[7][4].piece = new Queen(this.player1);
+        this.board[0][3].piece = new King(this.player2);
+        this.board[7][3].piece = new King(this.player1);
 
         // save coords on cell for easier lookup
         for (let y = 0; y < this.board.length; y++) {
@@ -26,6 +44,8 @@ export default class Game {
         }
     }
 
+    // generates a logEntry for a move
+    // this logEntry can then be executed by all players
     prepareMove(sourceCell, targetCell) {
         if (!sourceCell.piece) throw 'NoPieceToMove';
 
@@ -42,13 +62,28 @@ export default class Game {
         return logEntry;
     }
 
+    // checks if a move is valid
+    // TODO: check with piece class
+    checkMove(logEntry) {
+        let sourceCell = this.getCell(logEntry.source);
+        let targetCell = this.getCell(logEntry.target);
+        if (!sourceCell.piece) throw 'NoPieceToMove';
+        if (sourceCell.piece.class !== logEntry.movedPieceClass) throw 'OutOfSyncError: wrong source piece class';
+        if (logEntry.killedPieceClass &&
+            logEntry.killedPieceClass !== targetCell.piece.class) throw 'OutOfSyncError: wrong killed piece class';
+    }
+
     execute(logEntry) {
         if (logEntry.action === 'move') {
+            this.checkMove(logEntry);
+
             let sourceCell = this.getCell(logEntry.source);
             let targetCell = this.getCell(logEntry.target);
             targetCell.piece = sourceCell.piece;
             delete sourceCell.piece;
         }
+
+        this.gameLog.push(logEntry);
     }
 
     getPossibleMoves(cell) {
