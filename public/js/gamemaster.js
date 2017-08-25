@@ -1,8 +1,17 @@
 import Player from './player'
 import Game from './game'
 
+const GAME_STATES = {
+    // waiting for the user to make a play
+    INPUT: 1,
+    // waiting on other players - input is blocked
+    WAITING: 2
+};
+
+// client side
 class Gamemaster {
     constructor() {
+        this.gameState = GAME_STATES.INPUT;
         this.admin = true; // admin can move both pieces
         this.localPlayer = new Player("Bisaflor");
         let player2 = new Player("Mewtwo");
@@ -15,7 +24,7 @@ class Gamemaster {
         });
 
         this.socket = io();
-        this.socket.on('make move', function (data) {
+        this.socket.on('game action', function (data) {
             console.log(data);
             this.game.execute(data);
             this.executeAction(data);
@@ -30,11 +39,9 @@ class Gamemaster {
 
             let logEntry = this.game.prepareMove(sourceCell, cell);
 
-            this.game.execute(logEntry);
-            this.executeAction(logEntry);
             this.deselectPiece();
 
-            this.socket.emit('make move', logEntry);
+            this.socket.emit('game action', logEntry);
 
             return;
         }
@@ -52,14 +59,20 @@ class Gamemaster {
     }
 
     executeAction(logEntry) {
-        if (logEntry.action === 'move') {
-            let sourceJqCell = this.getjqCell(logEntry.source);
-            let targetJqCell = this.getjqCell(logEntry.target);
+        if (logEntry.action === 'sym move') {
+            // pick up pieces
+            for (let i = 0; i < logEntry.moves.length; i++) {
+                let sourceJqCell = this.getjqCell(logEntry.moves[i].source);
+                sourceJqCell.removeClass(logEntry.moves[i].movedPieceClass);
+            }
 
-            sourceJqCell.removeClass(logEntry.movedPieceClass);
-            if (logEntry.killedPieceClass)
-                targetJqCell.removeClass(logEntry.killedPieceClass);
-            targetJqCell.addClass(logEntry.movedPieceClass);
+            // put pieces down
+            for (let i = 0; i < logEntry.moves.length; i++) {
+                let targetJqCell = this.getjqCell(logEntry.moves[i].target);
+                if (logEntry.moves[i].killedPieceClass)
+                    targetJqCell.removeClass(logEntry.moves[i].killedPieceClass);
+                targetJqCell.addClass(logEntry.moves[i].movedPieceClass);
+            }
         }
     }
 

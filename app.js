@@ -436,6 +436,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// server side
 var GameServer = function () {
     function GameServer() {
         _classCallCheck(this, GameServer);
@@ -451,16 +452,17 @@ var GameServer = function () {
 
             // push game state
             for (var i = 0; i < this.game.gameLog.length; i++) {
-                socket.emit('make move', this.game.gameLog[i]);
+                socket.emit('game action', this.game.gameLog[i]);
             }
 
-            socket.on('make move', function (data) {
+            socket.on('game action', function (data) {
                 console.log(data);
 
-                this.game.execute(data);
-                for (var _i = 0; _i < this.players.length; _i++) {
-                    if (this.players[_i] === socket) continue;
-                    this.players[_i].emit('make move', data);
+                var result = this.game.execute(data);
+                if (result) {
+                    for (var _i = 0; _i < this.players.length; _i++) {
+                        this.players[_i].emit('game action', result);
+                    }
                 }
             }.bind(this));
 
@@ -528,11 +530,15 @@ var Game = function () {
         _classCallCheck(this, Game);
 
         this.rules = rules;
+        // stores all moves of the game
         this.gameLog = [];
+        // stores moves of players until every player has submitted
+        this.currentMoveCache = [];
         this.player1 = player1;
         this.player1.number = 1;
         this.player2 = player2;
         this.player2.number = 2;
+        this.playerCount = 2;
 
         this.board = this.generateCheckedBoard(8, 8);
 
@@ -578,6 +584,7 @@ var Game = function () {
 
             var logEntry = {
                 action: 'move',
+                playerNumber: sourceCell.piece.owner.number,
                 movedPieceClass: sourceCell.piece.class,
                 source: { x: sourceCell.x, y: sourceCell.y },
                 target: { x: targetCell.x, y: targetCell.y }
@@ -589,11 +596,11 @@ var Game = function () {
         }
 
         // checks if a move is valid
-        // TODO: check with piece class
 
     }, {
         key: 'checkMove',
         value: function checkMove(logEntry) {
+            // TODO check if he already submitted
             var sourceCell = this.getCell(logEntry.source);
             var targetCell = this.getCell(logEntry.target);
             if (!sourceCell.piece) throw 'NoPieceToMove';
@@ -605,15 +612,46 @@ var Game = function () {
         value: function execute(logEntry) {
             if (logEntry.action === 'move') {
                 this.checkMove(logEntry);
+                this.currentMoveCache.push(logEntry);
 
-                var sourceCell = this.getCell(logEntry.source);
-                var targetCell = this.getCell(logEntry.target);
-                targetCell.piece = sourceCell.piece;
-                delete sourceCell.piece;
-                targetCell.piece.hasMoved = true;
+                // wait for other players
+                if (this.currentMoveCache.length < this.playerCount) {
+                    return {
+                        action: 'notification',
+                        type: 'PlayerMadeMove',
+                        playerNumber: logEntry.playerNumber
+                    };
+                }
+
+                var symLogEntry = {
+                    action: 'sym move',
+                    moves: this.currentMoveCache
+                };
+                this.currentMoveCache = [];
+                this.execute(symLogEntry);
+                console.log(symLogEntry);
+                return symLogEntry;
             }
+            if (logEntry.action === 'sym move') {
+                var pieces = [];
 
-            this.gameLog.push(logEntry);
+                // pick up pieces
+                for (var i = 0; i < logEntry.moves.length; i++) {
+                    var sourceCell = this.getCell(logEntry.moves[i].source);
+                    pieces[i] = sourceCell.piece;
+                    delete sourceCell.piece;
+                }
+
+                // put pieces down
+                //TODO detect collisions
+                for (var j = 0; j < logEntry.moves.length; j++) {
+                    var targetCell = this.getCell(logEntry.moves[j].target);
+                    targetCell.piece = pieces[j];
+                    targetCell.piece.hasMoved = true;
+                }
+
+                this.gameLog.push(logEntry);
+            }
         }
     }, {
         key: 'getPossibleMoves',

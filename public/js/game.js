@@ -5,11 +5,15 @@ import {WhiteTile, BlackTile} from './tile';
 export default class Game {
     constructor(rules, player1, player2) {
         this.rules = rules;
+        // stores all moves of the game
         this.gameLog = [];
+        // stores moves of players until every player has submitted
+        this.currentMoveCache = [];
         this.player1 = player1;
         this.player1.number = 1;
         this.player2 = player2;
         this.player2.number = 2;
+        this.playerCount = 2;
 
         this.board = this.generateCheckedBoard(8, 8);
 
@@ -51,6 +55,7 @@ export default class Game {
 
         let logEntry = {
             action: 'move',
+            playerNumber: sourceCell.piece.owner.number,
             movedPieceClass: sourceCell.piece.class,
             source: {x: sourceCell.x, y: sourceCell.y},
             target: {x: targetCell.x, y: targetCell.y},
@@ -63,8 +68,8 @@ export default class Game {
     }
 
     // checks if a move is valid
-    // TODO: check with piece class
     checkMove(logEntry) {
+        // TODO check if he already submitted
         let sourceCell = this.getCell(logEntry.source);
         let targetCell = this.getCell(logEntry.target);
         if (!sourceCell.piece) throw 'NoPieceToMove';
@@ -76,15 +81,47 @@ export default class Game {
     execute(logEntry) {
         if (logEntry.action === 'move') {
             this.checkMove(logEntry);
+            this.currentMoveCache.push(logEntry);
 
-            let sourceCell = this.getCell(logEntry.source);
-            let targetCell = this.getCell(logEntry.target);
-            targetCell.piece = sourceCell.piece;
-            delete sourceCell.piece;
-            targetCell.piece.hasMoved = true;
+            // wait for other players
+            if (this.currentMoveCache.length < this.playerCount) {
+                return {
+                    action: 'notification',
+                    type: 'PlayerMadeMove',
+                    playerNumber: logEntry.playerNumber
+                };
+            }
+
+
+            let symLogEntry = {
+                action: 'sym move',
+                moves: this.currentMoveCache
+            };
+            this.currentMoveCache = [];
+            this.execute(symLogEntry);
+            console.log(symLogEntry);
+            return symLogEntry;
         }
+        if (logEntry.action === 'sym move') {
+            let pieces = [];
 
-        this.gameLog.push(logEntry);
+            // pick up pieces
+            for (let i = 0; i < logEntry.moves.length; i++) {
+                let sourceCell = this.getCell(logEntry.moves[i].source);
+                pieces[i] = sourceCell.piece;
+                delete sourceCell.piece;
+            }
+
+            // put pieces down
+            //TODO detect collisions
+            for (let j = 0; j < logEntry.moves.length; j++) {
+                let targetCell = this.getCell(logEntry.moves[j].target);
+                targetCell.piece = pieces[j];
+                targetCell.piece.hasMoved = true;
+            }
+
+            this.gameLog.push(logEntry);
+        }
     }
 
     getPossibleMoves(cell) {

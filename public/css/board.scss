@@ -31,10 +31,10 @@
 
     @each $piece in $chess-pieces {
       &.piece-#{$piece}-black:before {
-        background-image: url("/images/chess/chess_piece_2_black_#{$piece}.png");
+        background-image: url("/images/pieces/chess/chess_piece_2_black_#{$piece}.png");
       }
       &.piece-#{$piece}-white:before {
-        background-image: url("/images/chess/chess_piece_2_white_#{$piece}.png");
+        background-image: url("/images/pieces/chess/chess_piece_2_white_#{$piece}.png");
       }
     }
   }

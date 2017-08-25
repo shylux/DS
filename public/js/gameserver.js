@@ -1,6 +1,7 @@
 import Player from './player'
 import Game from './game'
 
+// server side
 export default class GameServer {
 
     constructor() {
@@ -13,16 +14,17 @@ export default class GameServer {
 
         // push game state
         for (let i = 0; i < this.game.gameLog.length; i++) {
-            socket.emit('make move', this.game.gameLog[i]);
+            socket.emit('game action', this.game.gameLog[i]);
         }
 
-        socket.on('make move', function(data) {
+        socket.on('game action', function(data) {
             console.log(data);
 
-            this.game.execute(data);
-            for (let i = 0; i < this.players.length; i++) {
-                if (this.players[i] === socket) continue;
-                this.players[i].emit('make move', data);
+            let result = this.game.execute(data);
+            if (result) {
+                for (let i = 0; i < this.players.length; i++) {
+                    this.players[i].emit('game action', result);
+                }
             }
         }.bind(this));
 
