@@ -19,35 +19,34 @@
       .board table td:before {
         content: '';
         display: block;
-        height: 80%;
-        width: 80%;
-        margin: 10%;
+        width: 100%;
+        height: 100%;
         background: no-repeat center;
         background-size: contain; }
       .board table td.piece-pawn-black:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_black_pawn.png"); }
+        background-image: url("/images/pieces/chess_svg/pawn_black.svg"); }
       .board table td.piece-pawn-white:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_white_pawn.png"); }
+        background-image: url("/images/pieces/chess_svg/pawn_white.svg"); }
       .board table td.piece-rook-black:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_black_rook.png"); }
+        background-image: url("/images/pieces/chess_svg/rook_black.svg"); }
       .board table td.piece-rook-white:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_white_rook.png"); }
+        background-image: url("/images/pieces/chess_svg/rook_white.svg"); }
       .board table td.piece-knight-black:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_black_knight.png"); }
+        background-image: url("/images/pieces/chess_svg/knight_black.svg"); }
       .board table td.piece-knight-white:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_white_knight.png"); }
+        background-image: url("/images/pieces/chess_svg/knight_white.svg"); }
       .board table td.piece-bishop-black:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_black_bishop.png"); }
+        background-image: url("/images/pieces/chess_svg/bishop_black.svg"); }
       .board table td.piece-bishop-white:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_white_bishop.png"); }
+        background-image: url("/images/pieces/chess_svg/bishop_white.svg"); }
       .board table td.piece-queen-black:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_black_queen.png"); }
+        background-image: url("/images/pieces/chess_svg/queen_black.svg"); }
       .board table td.piece-queen-white:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_white_queen.png"); }
+        background-image: url("/images/pieces/chess_svg/queen_white.svg"); }
       .board table td.piece-king-black:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_black_king.png"); }
+        background-image: url("/images/pieces/chess_svg/king_black.svg"); }
       .board table td.piece-king-white:before {
-        background-image: url("/images/pieces/chess/chess_piece_2_white_king.png"); }
+        background-image: url("/images/pieces/chess_svg/king_white.svg"); }
   .board .overlay {
     display: none;
     position: absolute;

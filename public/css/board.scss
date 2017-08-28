@@ -29,9 +29,8 @@
       &:before {
         content: '';
         display: block;
-        height: 80%;
-        width: 80%;
-        margin: 10%;
+        width: 100%;
+        height: 100%;
         background: no-repeat center;
         background-size: contain;
       }
@@ -40,10 +39,10 @@
 
       @each $piece in $chess-pieces {
         &.piece-#{$piece}-black:before {
-          background-image: url("/images/pieces/chess/chess_piece_2_black_#{$piece}.png");
+          background-image: url("/images/pieces/chess_svg/#{$piece}_black.svg");
         }
         &.piece-#{$piece}-white:before {
-          background-image: url("/images/pieces/chess/chess_piece_2_white_#{$piece}.png");
+          background-image: url("/images/pieces/chess_svg/#{$piece}_white.svg");
         }
       }
     }
