@@ -541,6 +541,8 @@ var Game = function () {
         this.playerCount = 2;
 
         this.board = this.generateCheckedBoard(8, 8);
+        this.height = this.board.length;
+        this.width = this.board[0].length;
 
         for (var x = 0; x < 8; x++) {
             this.board[1][x].piece = new _piece.Pawn(this.player2);
@@ -676,7 +678,7 @@ var Game = function () {
         key: 'render',
         value: function render() {
             var template = __webpack_require__(28);
-            return template({ game: this });
+            return template({ game: this, cols: this.board[0] });
         }
     }, {
         key: 'generateCheckedBoard',
@@ -2099,13 +2101,13 @@ function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj);
 module.exports = (Handlebars["default"] || Handlebars).template({"1":function(container,depth0,helpers,partials,data) {
     var stack1;
 
-  return "    <tr>\r\n"
+  return "        <tr>\r\n"
     + ((stack1 = helpers.each.call(depth0 != null ? depth0 : (container.nullContext || {}),depth0,{"name":"each","hash":{},"fn":container.program(2, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "    </tr>\r\n";
+    + "        </tr>\r\n";
 },"2":function(container,depth0,helpers,partials,data) {
     var stack1;
 
-  return "            "
+  return "                "
     + ((stack1 = __default(__webpack_require__(29)).call(depth0 != null ? depth0 : (container.nullContext || {}),depth0,{"name":"rendercell","hash":{},"fn":container.program(3, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "\r\n";
 },"3":function(container,depth0,helpers,partials,data) {
@@ -2113,9 +2115,9 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1;
 
-  return "<table id=\"board\">\r\n"
+  return "<div class=\"board\">\r\n    <table>\r\n"
     + ((stack1 = helpers.each.call(depth0 != null ? depth0 : (container.nullContext || {}),((stack1 = (depth0 != null ? depth0.game : depth0)) != null ? stack1.board : stack1),{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "</table>";
+    + "    </table>\r\n    <div class=\"overlay\">\r\n        <div class=\"message\">\r\n            <p class=\"title\">So and so message</p>\r\n            <p class=\"text\">Please reload the app</p>\r\n        </div>\r\n    </div>\r\n</div>";
 },"useData":true});
 
 /***/ }),

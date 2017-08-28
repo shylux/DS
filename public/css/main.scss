@@ -1,1 +1,23 @@
 @import './board.scss';
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-width: 100%;
+  min-height: 100%;
+
+  font-family: 'Roboto', sans-serif;
+}
+
+body {
+  background: linear-gradient(to bottom, #8e9eab, #eef2f3);
+}
+
+.wrapped {
+  width: 800px;
+  margin: 0 auto;
+}
+
+#board-wrapper {
+  padding: 10px 0;
+}

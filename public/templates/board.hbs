@@ -1,9 +1,17 @@
-<table id="board">
-    {{#each game.board}}
-    <tr>
-        {{#each this}}
-            {{#rendercell this}}{{/rendercell}}
+<div class="board">
+    <table>
+        {{#each game.board}}
+        <tr>
+            {{#each this}}
+                {{#rendercell this}}{{/rendercell}}
+            {{/each}}
+        </tr>
         {{/each}}
-    </tr>
-    {{/each}}
-</table>
+    </table>
+    <div class="overlay">
+        <div class="message">
+            <p class="title">So and so message</p>
+            <p class="text">Please reload the app</p>
+        </div>
+    </div>
+</div>

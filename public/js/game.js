@@ -16,6 +16,8 @@ export default class Game {
         this.playerCount = 2;
 
         this.board = this.generateCheckedBoard(8, 8);
+        this.height = this.board.length;
+        this.width = this.board[0].length;
 
         for (let x = 0; x < 8; x++) {
             this.board[1][x].piece = new Pawn(this.player2);
@@ -143,7 +145,7 @@ export default class Game {
 
     render() {
         let template = require("../templates/board.hbs");
-        return template({game: this});
+        return template({game: this, cols: this.board[0]});
     }
 
     generateCheckedBoard(width, height) {
