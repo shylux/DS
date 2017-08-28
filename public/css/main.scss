@@ -13,6 +13,17 @@ body {
   background: linear-gradient(to bottom, #8e9eab, #eef2f3);
 }
 
+a {
+  color: inherit;
+}
+a:visited {
+  color: inherit;
+}
+
+h1 {
+  text-shadow: 0 0 2px black;
+}
+
 .wrapped {
   width: 800px;
   margin: 0 auto;

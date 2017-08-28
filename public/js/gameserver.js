@@ -20,12 +20,18 @@ export default class GameServer {
         socket.on('game action', function(data) {
             console.log(data);
 
-            let result = this.game.execute(data);
-            if (result) {
-                for (let i = 0; i < this.players.length; i++) {
-                    this.players[i].emit('game action', result);
+            try {
+                let result = this.game.execute(data);
+
+                if (result) {
+                    for (let i = 0; i < this.players.length; i++) {
+                        this.players[i].emit('game action', result);
+                    }
                 }
+            } catch (err) {
+                socket.emit('error', err);
             }
+
         }.bind(this));
 
         socket.on('disconnect', function(){

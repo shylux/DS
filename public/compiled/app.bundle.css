@@ -49,6 +49,7 @@
       .board table td.piece-king-white:before {
         background-image: url("/images/pieces/chess/chess_piece_2_white_king.png"); }
   .board .overlay {
+    display: none;
     position: absolute;
     top: 0;
     left: 0;
@@ -62,6 +63,9 @@
       box-shadow: 0 0 5px black;
       border-radius: 2px;
       background-color: rgba(255, 255, 255, 0.8); }
+      .board .overlay .message.error {
+        background-color: #f2dede;
+        color: #a94442; }
       .board .overlay .message p {
         margin: 0; }
       .board .overlay .message .title {
@@ -79,6 +83,15 @@ html, body {
 
 body {
   background: linear-gradient(to bottom, #8e9eab, #eef2f3); }
+
+a {
+  color: inherit; }
+
+a:visited {
+  color: inherit; }
+
+h1 {
+  text-shadow: 0 0 2px black; }
 
 .wrapped {
   width: 800px;

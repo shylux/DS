@@ -458,11 +458,16 @@ var GameServer = function () {
             socket.on('game action', function (data) {
                 console.log(data);
 
-                var result = this.game.execute(data);
-                if (result) {
-                    for (var _i = 0; _i < this.players.length; _i++) {
-                        this.players[_i].emit('game action', result);
+                try {
+                    var result = this.game.execute(data);
+
+                    if (result) {
+                        for (var _i = 0; _i < this.players.length; _i++) {
+                            this.players[_i].emit('game action', result);
+                        }
                     }
+                } catch (err) {
+                    socket.emit('error', err);
                 }
             }.bind(this));
 
@@ -2117,7 +2122,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 
   return "<div class=\"board\">\r\n    <table>\r\n"
     + ((stack1 = helpers.each.call(depth0 != null ? depth0 : (container.nullContext || {}),((stack1 = (depth0 != null ? depth0.game : depth0)) != null ? stack1.board : stack1),{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "    </table>\r\n    <div class=\"overlay\">\r\n        <div class=\"message\">\r\n            <p class=\"title\">So and so message</p>\r\n            <p class=\"text\">Please reload the app</p>\r\n        </div>\r\n    </div>\r\n</div>";
+    + "    </table>\r\n    <div class=\"overlay\">\r\n        <div class=\"message\">\r\n            <p class=\"title\">So and so message</p>\r\n            <p class=\"content\">Please reload the app</p>\r\n        </div>\r\n    </div>\r\n</div>";
 },"useData":true});
 
 /***/ }),

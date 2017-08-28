@@ -27,9 +27,29 @@ class Gamemaster {
         this.socket = io();
         this.socket.on('game action', function (data) {
             console.log(data);
-            this.game.execute(data);
-            this.executeAction(data);
-        }.bind(this))
+            switch (data.action) {
+                case 'action':
+                case 'sym move':
+                    this.game.execute(data);
+                    this.executeAction(data);
+                    break;
+                case 'notification':
+                    switch (data.type) {
+                        case 'PlayerMadeMove':
+                            this.showNotification('Please wait...', 'Waiting for other player to make his move.');
+                            break;
+                        default:
+                            this.showError('UnknownNotificationType: '+data.type);
+                    }
+                    break;
+                default:
+                    this.showError('UnknownGameAction: '+data.action);
+            }
+        }.bind(this));
+
+        this.socket.on('error message', function (data) {
+            this.showError(data);
+        }.bind(this));
     }
 
     handleClick(cell) {
@@ -102,6 +122,22 @@ class Gamemaster {
     deselectPiece() {
         $('.selected', this.html).removeClass('selected');
         $('.possibleMove', this.html).removeClass('possibleMove');
+    }
+
+    showNotification(title, content) {
+        $('.message .title', this.html).text(title);
+        $('.message .content', this.html).html(content);
+        $('.overlay', this.html).show();
+    }
+    showError(message) {
+        $('.message', this.html).addClass('error');
+        this.showNotification(
+            'Error: ' + message,
+            'Try to <a href=".">reload</a>. ' +
+            'If that doesn\'t work yell at the dev: <a href="mailto:shylux@gmail.com">shylux@gmail.com</a>');
+    }
+    hideNotification() {
+        $('.overlay', this.html).hide();
     }
 }
 
