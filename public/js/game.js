@@ -143,11 +143,6 @@ export default class Game {
         return row[x];
     }
 
-    render() {
-        let template = require("../templates/board.hbs");
-        return template({game: this, cols: this.board[0]});
-    }
-
     generateCheckedBoard(width, height) {
         let board = [];
         for (let y = 0; y < height; y++) {

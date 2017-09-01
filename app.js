@@ -681,12 +681,6 @@ var Game = function () {
             return row[x];
         }
     }, {
-        key: 'render',
-        value: function render() {
-            var template = __webpack_require__(28);
-            return template({ game: this, cols: this.board[0] });
-        }
-    }, {
         key: 'generateCheckedBoard',
         value: function generateCheckedBoard(width, height) {
             var board = [];
@@ -2099,45 +2093,8 @@ var WhiteTile = exports.WhiteTile = function (_Tile2) {
 }(Tile);
 
 /***/ }),
-/* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Handlebars = __webpack_require__(2);
-function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
-module.exports = (Handlebars["default"] || Handlebars).template({"1":function(container,depth0,helpers,partials,data) {
-    var stack1;
-
-  return "        <tr>\r\n"
-    + ((stack1 = helpers.each.call(depth0 != null ? depth0 : (container.nullContext || {}),depth0,{"name":"each","hash":{},"fn":container.program(2, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "        </tr>\r\n";
-},"2":function(container,depth0,helpers,partials,data) {
-    var stack1;
-
-  return "                "
-    + ((stack1 = __default(__webpack_require__(29)).call(depth0 != null ? depth0 : (container.nullContext || {}),depth0,{"name":"rendercell","hash":{},"fn":container.program(3, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "\r\n";
-},"3":function(container,depth0,helpers,partials,data) {
-    return "";
-},"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
-    var stack1;
-
-  return "<div class=\"board\">\r\n    <table>\r\n"
-    + ((stack1 = helpers.each.call(depth0 != null ? depth0 : (container.nullContext || {}),((stack1 = (depth0 != null ? depth0.game : depth0)) != null ? stack1.board : stack1),{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "    </table>\r\n    <div class=\"overlay\">\r\n        <div class=\"message\">\r\n            <p class=\"title\">So and so message</p>\r\n            <p class=\"content\">Please reload the app</p>\r\n        </div>\r\n    </div>\r\n</div>";
-},"useData":true});
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function (cell) {
-    return cell.render();
-};
-
-/***/ }),
+/* 28 */,
+/* 29 */,
 /* 30 */
 /***/ (function(module, exports) {
 

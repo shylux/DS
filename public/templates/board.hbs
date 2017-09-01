@@ -1,12 +1,12 @@
 <div class="board">
     <table>
-        {{#each game.board}}
+        {{#spinforplayer game player game.board}}
         <tr>
-            {{#each this}}
+            {{#spinforplayer ../game ../player this}}
                 {{#rendercell this}}{{/rendercell}}
-            {{/each}}
+            {{/spinforplayer}}
         </tr>
-        {{/each}}
+        {{/spinforplayer}}
     </table>
     <div class="overlay">
         <div class="message">

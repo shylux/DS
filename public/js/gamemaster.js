@@ -16,7 +16,7 @@ export default class GameMaster {
             this.localPlayer = player2;
 
         this.game = new Game({}, player1, player2);
-        this.html = $(this.game.render());
+        this.render();
 
         $('#board-wrapper').append(this.html);
         $('td', this.html).on('click', function(event) {
@@ -137,5 +137,11 @@ export default class GameMaster {
     }
     hideNotification() {
         $('.overlay', this.html).hide();
+    }
+
+    render() {
+        let template = require("../templates/board.hbs");
+        let html = template({game: this.game, player: this.localPlayer});
+        this.html = $(html);
     }
 }
