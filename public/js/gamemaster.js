@@ -29,13 +29,15 @@ export default class GameMaster {
             switch (data.action) {
                 case 'action':
                 case 'sym move':
+                    this.hideNotification();
                     this.game.execute(data);
                     this.executeAction(data);
                     break;
                 case 'notification':
                     switch (data.type) {
                         case 'PlayerMadeMove':
-                            this.showNotification('Please wait...', 'Waiting for other player to make his move.');
+                            if (data.playerNumber === this.localPlayer.number)
+                                this.showNotification('Please wait...', 'Waiting for other player to make his move.');
                             break;
                         default:
                             this.showError('UnknownNotificationType: '+data.type);

@@ -71,7 +71,11 @@ export default class Game {
 
     // checks if a move is valid
     checkMove(logEntry) {
-        // TODO check if he already submitted
+        // check if the player already made his move
+        for (let i = 0; i < this.currentMoveCache.length; i++)
+            if (this.currentMoveCache[i].playerNumber === logEntry.playerNumber)
+                throw 'OutOfSyncError: Player already made his move';
+
         let sourceCell = this.getCell(logEntry.source);
         let targetCell = this.getCell(logEntry.target);
         if (!sourceCell.piece) throw 'NoPieceToMove';

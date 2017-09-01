@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -260,17 +260,6 @@ module.exports = exports['default'];
 "use strict";
 
 
-// Create a simple path alias to allow browserify to resolve
-// the runtime on a supported path.
-module.exports = __webpack_require__(11)['default'];
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 exports.__esModule = true;
 exports.HandlebarsEnvironment = HandlebarsEnvironment;
 // istanbul ignore next
@@ -376,34 +365,34 @@ exports.createFrame = _utils.createFrame;
 exports.logger = _logger2['default'];
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(5);
+module.exports = __webpack_require__(4);
 
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _gameserver = __webpack_require__(6);
+var _gameserver = __webpack_require__(5);
 
 var _gameserver2 = _interopRequireDefault(_gameserver);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // express
-var express = __webpack_require__(30);
+var express = __webpack_require__(28);
 var app = express();
 app.use(express.static('public'));
 
 var server = app.listen(8080);
 
 // io
-var io = __webpack_require__(31).listen(server);
+var io = __webpack_require__(29).listen(server);
 
 var gameserver = new _gameserver2.default();
 
@@ -412,7 +401,7 @@ io.on('connection', function (socket) {
 });
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -424,11 +413,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _player = __webpack_require__(7);
+var _player = __webpack_require__(6);
 
 var _player2 = _interopRequireDefault(_player);
 
-var _game = __webpack_require__(8);
+var _game = __webpack_require__(7);
 
 var _game2 = _interopRequireDefault(_game);
 
@@ -468,7 +457,7 @@ var GameServer = function () {
                         }
                     }
                 } catch (err) {
-                    socket.emit('error', err);
+                    socket.emit('error message', err);
                 }
             }.bind(this));
 
@@ -485,7 +474,7 @@ var GameServer = function () {
 exports.default = GameServer;
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -507,7 +496,7 @@ var Player = function Player(name) {
 exports.default = Player;
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -519,7 +508,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _cell = __webpack_require__(9);
+var _cell = __webpack_require__(8);
 
 var _cell2 = _interopRequireDefault(_cell);
 
@@ -608,8 +597,10 @@ var Game = function () {
     }, {
         key: 'checkMove',
         value: function checkMove(logEntry) {
-            // TODO check if he already submitted
-            var sourceCell = this.getCell(logEntry.source);
+            // check if the player already made his move
+            for (var i = 0; i < this.currentMoveCache.length; i++) {
+                if (this.currentMoveCache[i].playerNumber === logEntry.playerNumber) throw 'OutOfSyncError: Player already made his move';
+            }var sourceCell = this.getCell(logEntry.source);
             var targetCell = this.getCell(logEntry.target);
             if (!sourceCell.piece) throw 'NoPieceToMove';
             if (sourceCell.piece.class !== logEntry.movedPieceClass) throw 'OutOfSyncError: wrong source piece class';
@@ -700,7 +691,7 @@ var Game = function () {
 exports.default = Game;
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -727,7 +718,7 @@ var Cell = function () {
     _createClass(Cell, [{
         key: "render",
         value: function render() {
-            var template = __webpack_require__(10);
+            var template = __webpack_require__(9);
             var params = { cell: this, classes: this.classes.join(' ') };
             return template(params);
         }
@@ -751,10 +742,10 @@ var Cell = function () {
 exports.default = Cell;
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Handlebars = __webpack_require__(2);
+var Handlebars = __webpack_require__(10);
 function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
 module.exports = (Handlebars["default"] || Handlebars).template({"1":function(container,depth0,helpers,partials,data) {
     var helper;
@@ -775,6 +766,17 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
     + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.image : depth0),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "</td>";
 },"useData":true});
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+// Create a simple path alias to allow browserify to resolve
+// the runtime on a supported path.
+module.exports = __webpack_require__(11)['default'];
 
 /***/ }),
 /* 11 */
@@ -804,7 +806,7 @@ function _interopRequireWildcard(obj) {
   }
 }
 
-var _handlebarsBase = __webpack_require__(3);
+var _handlebarsBase = __webpack_require__(2);
 
 var base = _interopRequireWildcard(_handlebarsBase);
 
@@ -1384,7 +1386,7 @@ var _exception = __webpack_require__(1);
 
 var _exception2 = _interopRequireDefault(_exception);
 
-var _base = __webpack_require__(3);
+var _base = __webpack_require__(2);
 
 function checkRevision(compilerInfo) {
   var compilerRevision = compilerInfo && compilerInfo[0] || 1,
@@ -2093,15 +2095,13 @@ var WhiteTile = exports.WhiteTile = function (_Tile2) {
 }(Tile);
 
 /***/ }),
-/* 28 */,
-/* 29 */,
-/* 30 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
 
 /***/ }),
-/* 31 */
+/* 29 */
 /***/ (function(module, exports) {
 
 module.exports = require("socket.io");

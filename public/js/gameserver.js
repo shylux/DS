@@ -30,7 +30,7 @@ export default class GameServer {
                     }
                 }
             } catch (err) {
-                socket.emit('error', err);
+                socket.emit('error message', err);
             }
 
         }.bind(this));
