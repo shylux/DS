@@ -96,6 +96,40 @@ h1 {
   width: 800px;
   margin: 0 auto; }
 
+header {
+  clear: both;
+  overflow: auto; }
+  header h1 {
+    float: left; }
+  header #user {
+    float: right;
+    margin-top: 1.5em; }
+    header #user > * > * {
+      float: left;
+      height: 35px; }
+    header #user input {
+      display: block;
+      font-size: 1em;
+      padding: 6px 10px;
+      margin: 0;
+      box-sizing: border-box;
+      border-radius: 3px;
+      border: none; }
+    header #user input[type=submit] {
+      background-color: dimgray;
+      cursor: pointer; }
+    header #user #login .username {
+      border-bottom-right-radius: 0;
+      border-top-right-radius: 0; }
+    header #user #login input[type=submit] {
+      border-bottom-left-radius: 0;
+      border-top-left-radius: 0; }
+    header #user .info {
+      display: none; }
+      header #user .info .username {
+        line-height: 35px;
+        margin-right: 10px; }
+
 #board-wrapper {
   padding: 10px 0; }
 

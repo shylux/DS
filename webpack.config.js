@@ -27,7 +27,7 @@ var wbloaders = [
 ];
 
 module.exports = [{
-    entry: ['./public/js/gamemaster.js', './public/css/main.scss'],
+    entry: ['./public/js/client.js', './public/css/main.scss'],
     output: {
         path: path.resolve(__dirname, 'public/compiled'),
         filename: 'app.bundle.js'

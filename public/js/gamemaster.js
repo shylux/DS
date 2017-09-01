@@ -1,17 +1,9 @@
 import Player from './player'
 import Game from './game'
 
-const GAME_STATES = {
-    // waiting for the user to make a play
-    INPUT: 1,
-    // waiting on other players - input is blocked
-    WAITING: 2
-};
-
 // client side
 class Gamemaster {
     constructor() {
-        this.gameState = GAME_STATES.INPUT;
         this.admin = true; // admin can move both pieces
         this.localPlayer = new Player("Bisaflor");
         let player2 = new Player("Mewtwo");
@@ -140,5 +132,3 @@ class Gamemaster {
         $('.overlay', this.html).hide();
     }
 }
-
-var gm = new Gamemaster();

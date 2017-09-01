@@ -16,9 +16,21 @@
     <header class="wrapped">
         <h1>Symmetric Chess</h1>
         <nav>
-            <a href="rules.html">Rules</a>
+            <!--<a href="rules.html">Rules</a>-->
         </nav>
+
+        <div id="user">
+            <form id="login">
+                <input class="username" placeholder="Username">
+                <input type="submit" value="Login">
+            </form>
+            <div class="info">
+                <span class="username"></span>
+                <input type="submit" class="logout" value="Logout">
+            </div>
+        </div>
     </header>
+
     <div id="board-wrapper"></div>
 
     <script src="compiled/app.bundle.js"></script>
