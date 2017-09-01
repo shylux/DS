@@ -25,11 +25,10 @@ export default class GameServer {
                 let result = this.game.execute(data);
 
                 if (result) {
-                    for (let i = 0; i < this.players.length; i++) {
-                        this.players[i].emit('game action', result);
-                    }
+                    this.distributeActions([result]);
                 }
             } catch (err) {
+                console.log(err);
                 socket.emit('error message', err);
             }
 
@@ -39,6 +38,20 @@ export default class GameServer {
             console.log('user disconnected');
             this.players.splice(this.players.indexOf(socket), 1);
         }.bind(this));
+    }
+
+    distributeActions(actions, player) {
+        // no player: distribute to every player
+        if (player === undefined) {
+            for (let i = 0; i < this.players.length; i++) {
+                this.distributeActions(actions, this.players[i]);
+            }
+            return;
+        }
+
+        for (let i = 0; i < actions.length; i++) {
+            player.emit('game action', actions[i]);
+        }
     }
 }
 

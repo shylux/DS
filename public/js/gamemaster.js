@@ -90,6 +90,9 @@ export default class GameMaster {
 
             // put pieces down
             for (let i = 0; i < logEntry.moves.length; i++) {
+                if (logEntry.moves[i].destroyed)
+                    continue;
+
                 let targetJqCell = this.getjqCell(logEntry.moves[i].target);
                 if (logEntry.moves[i].killedPieceClass)
                     targetJqCell.removeClass(logEntry.moves[i].killedPieceClass);

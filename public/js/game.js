@@ -61,6 +61,7 @@ export default class Game {
             movedPieceClass: sourceCell.piece.class,
             source: {x: sourceCell.x, y: sourceCell.y},
             target: {x: targetCell.x, y: targetCell.y},
+            destroyed: false // this is set when two pieces collide
         };
 
         if (targetCell.piece)
@@ -98,11 +99,25 @@ export default class Game {
                 };
             }
 
-
+            // build sym move
             let symLogEntry = {
                 action: 'sym move',
                 moves: this.currentMoveCache
             };
+
+            // check and mark colliding piece
+            for (let i = 0; i < symLogEntry.moves.length; i++) {
+                for (let j = 0; j < symLogEntry.moves.length; j++) {
+                    if (i !== j &&
+                        symLogEntry.moves[i].target.x === symLogEntry.moves[j].target.x &&
+                        symLogEntry.moves[i].target.y === symLogEntry.moves[j].target.y) {
+                        // a collision!
+                        symLogEntry.moves[i].destroyed = true;
+                        break;
+                    }
+                }
+            }
+
             this.currentMoveCache = [];
             this.execute(symLogEntry);
             console.log(symLogEntry);
@@ -118,9 +133,12 @@ export default class Game {
                 delete sourceCell.piece;
             }
 
-            // put pieces down
-            //TODO detect collisions
+            // put piece down
             for (let j = 0; j < logEntry.moves.length; j++) {
+                // do not put piece down if it was destroyed
+                if (logEntry.moves[j].destroyed)
+                    continue;
+
                 let targetCell = this.getCell(logEntry.moves[j].target);
                 targetCell.piece = pieces[j];
                 targetCell.piece.hasMoved = true;

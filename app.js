@@ -452,11 +452,10 @@ var GameServer = function () {
                     var result = this.game.execute(data);
 
                     if (result) {
-                        for (var _i = 0; _i < this.players.length; _i++) {
-                            this.players[_i].emit('game action', result);
-                        }
+                        this.distributeActions([result]);
                     }
                 } catch (err) {
+                    console.log(err);
                     socket.emit('error message', err);
                 }
             }.bind(this));
@@ -465,6 +464,21 @@ var GameServer = function () {
                 console.log('user disconnected');
                 this.players.splice(this.players.indexOf(socket), 1);
             }.bind(this));
+        }
+    }, {
+        key: 'distributeActions',
+        value: function distributeActions(actions, player) {
+            // no player: distribute to every player
+            if (player === undefined) {
+                for (var i = 0; i < this.players.length; i++) {
+                    this.distributeActions(actions, this.players[i]);
+                }
+                return;
+            }
+
+            for (var _i = 0; _i < actions.length; _i++) {
+                player.emit('game action', actions[_i]);
+            }
         }
     }]);
 
@@ -584,7 +598,8 @@ var Game = function () {
                 playerNumber: sourceCell.piece.owner.number,
                 movedPieceClass: sourceCell.piece.class,
                 source: { x: sourceCell.x, y: sourceCell.y },
-                target: { x: targetCell.x, y: targetCell.y }
+                target: { x: targetCell.x, y: targetCell.y },
+                destroyed: false // this is set when two pieces collide
             };
 
             if (targetCell.piece) logEntry.killedPieceClass = targetCell.piece.class;
@@ -622,10 +637,23 @@ var Game = function () {
                     };
                 }
 
+                // build sym move
                 var symLogEntry = {
                     action: 'sym move',
                     moves: this.currentMoveCache
                 };
+
+                // check and mark colliding piece
+                for (var i = 0; i < symLogEntry.moves.length; i++) {
+                    for (var j = 0; j < symLogEntry.moves.length; j++) {
+                        if (i !== j && symLogEntry.moves[i].target.x === symLogEntry.moves[j].target.x && symLogEntry.moves[i].target.y === symLogEntry.moves[j].target.y) {
+                            // a collision!
+                            symLogEntry.moves[i].destroyed = true;
+                            break;
+                        }
+                    }
+                }
+
                 this.currentMoveCache = [];
                 this.execute(symLogEntry);
                 console.log(symLogEntry);
@@ -635,17 +663,19 @@ var Game = function () {
                 var pieces = [];
 
                 // pick up pieces
-                for (var i = 0; i < logEntry.moves.length; i++) {
-                    var sourceCell = this.getCell(logEntry.moves[i].source);
-                    pieces[i] = sourceCell.piece;
+                for (var _i = 0; _i < logEntry.moves.length; _i++) {
+                    var sourceCell = this.getCell(logEntry.moves[_i].source);
+                    pieces[_i] = sourceCell.piece;
                     delete sourceCell.piece;
                 }
 
-                // put pieces down
-                //TODO detect collisions
-                for (var j = 0; j < logEntry.moves.length; j++) {
-                    var targetCell = this.getCell(logEntry.moves[j].target);
-                    targetCell.piece = pieces[j];
+                // put piece down
+                for (var _j = 0; _j < logEntry.moves.length; _j++) {
+                    // do not put piece down if it was destroyed
+                    if (logEntry.moves[_j].destroyed) continue;
+
+                    var targetCell = this.getCell(logEntry.moves[_j].target);
+                    targetCell.piece = pieces[_j];
                     targetCell.piece.hasMoved = true;
                 }
 
