@@ -2,21 +2,28 @@ import Player from './player'
 import Game from './game'
 
 // client side
-class Gamemaster {
-    constructor() {
-        this.admin = true; // admin can move both pieces
-        this.localPlayer = new Player("Bisaflor");
-        let player2 = new Player("Mewtwo");
+export default class GameMaster {
+    constructor(socket, client, data) {
+        // setup game based on 'setup game' data from server
 
-        this.game = new Game({}, this.localPlayer, player2);
+        let player1 = new Player(data.player1);
+        let player2 = new Player(data.player2);
+
+        this.localPlayer = null;
+        if (player1.name === client.username)
+            this.localPlayer = player1;
+        if (player2.name === client.username)
+            this.localPlayer = player2;
+
+        this.game = new Game({}, player1, player2);
         this.html = $(this.game.render());
 
         $('#board-wrapper').append(this.html);
-        $('td', this.html).on('click', function() {
-            gm.handleClick(gm.getCell($(this)));
-        });
+        $('td', this.html).on('click', function(event) {
+            this.handleClick(this.getCell($(event.target)));
+        }.bind(this));
 
-        this.socket = io();
+        this.socket = socket;
         this.socket.on('game action', function (data) {
             console.log(data);
             switch (data.action) {

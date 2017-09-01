@@ -451,6 +451,7 @@ var GameServer = function () {
             this.players.push(socket);
 
             // push game state
+            socket.emit('setup game', { rules: {}, player1: this.game.player1.name, player2: this.game.player2.name });
             for (var i = 0; i < this.game.gameLog.length; i++) {
                 socket.emit('game action', this.game.gameLog[i]);
             }

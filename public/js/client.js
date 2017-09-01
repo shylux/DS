@@ -1,8 +1,14 @@
 import {readCookie, createCookie, eraseCookie} from './utils/cookie'
+import GameMaster from './gamemaster'
 
 class Client {
     constructor(username) {
         this.login(username);
+        this.socket = io();
+
+        this.socket.on('setup game', function (data) {
+            this.gamemaster = new GameMaster(this.socket, this, data);
+        }.bind(this));
     }
 
     login(username) {
