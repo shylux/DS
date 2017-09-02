@@ -1,6 +1,7 @@
 import Cell from './cell'
 import {Pawn, Rook, Knight, Bishop, Queen, King} from './piece'
 import {WhiteTile, BlackTile} from './tile';
+import KingDead from "./game_types/lose_conditions/kingdead";
 
 export default class Game {
     constructor(rules, player1, player2) {
@@ -39,6 +40,8 @@ export default class Game {
         this.board[7][4].piece = new Queen(this.player1);
         this.board[0][3].piece = new King(this.player2);
         this.board[7][3].piece = new King(this.player1);
+
+        this.rules.loseConditions = [new KingDead()];
 
         // save coords on cell for easier lookup
         for (let y = 0; y < this.board.length; y++) {
@@ -121,6 +124,11 @@ export default class Game {
             this.currentMoveCache = [];
             this.execute(symLogEntry);
             console.log(symLogEntry);
+            let gameEnd = this.checkWinCondition();
+            if (gameEnd) {
+                this.gameLog.push(gameEnd);
+                return [symLogEntry, gameEnd];
+            }
             return symLogEntry;
         }
         if (logEntry.action === 'sym move') {
@@ -150,6 +158,29 @@ export default class Game {
 
     getPossibleMoves(cell) {
         return cell.piece.getPossibleMoves(this, cell.x, cell.y);
+    }
+
+    checkWinCondition() {
+        let playersStillAlive = new Set([this.player1, this.player2]);
+        for (let i = 0; i < this.rules.loseConditions.length; i++) {
+            let losers = this.rules.loseConditions[i].checkCondition(this);
+            for (let loser of losers.values()) {
+                playersStillAlive.delete(loser);
+            }
+        }
+
+        switch (playersStillAlive.size) {
+            case 0:
+                return {
+                    action: 'gameEnd',
+                    winner: 0 // number 0: draw
+                };
+            case 1:
+                return {
+                    action: 'gameEnd',
+                    winner: [...playersStillAlive][0].number
+                };
+        }
     }
 
     getCell(x, y) {

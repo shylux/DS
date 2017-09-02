@@ -29,6 +29,7 @@ export default class GameMaster {
             switch (data.action) {
                 case 'action':
                 case 'sym move':
+                case 'gameEnd':
                     this.hideNotification();
                     this.game.execute(data);
                     this.executeAction(data);
@@ -97,6 +98,19 @@ export default class GameMaster {
                 if (logEntry.moves[i].killedPieceClass)
                     targetJqCell.removeClass(logEntry.moves[i].killedPieceClass);
                 targetJqCell.addClass(logEntry.moves[i].movedPieceClass);
+            }
+        }
+
+        if (logEntry.action === 'gameEnd') {
+            if (logEntry.winner === 0) {
+                this.showNotification('Draw', 'The game ended in a draw.');
+            }
+            if (logEntry.winner === this.localPlayer.number) {
+                $('.message', this.html).addClass('win');
+                this.showNotification('Winner', 'You won this game.');
+            } else {
+                $('.message', this.html).addClass('lose');
+                this.showNotification('2nd Place', 'You lost this game');
             }
         }
     }

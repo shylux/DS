@@ -62,9 +62,12 @@
       box-shadow: 0 0 5px black;
       border-radius: 2px;
       background-color: rgba(255, 255, 255, 0.8); }
-      .board .overlay .message.error {
+      .board .overlay .message.error, .board .overlay .message.lose {
         background-color: #f2dede;
         color: #a94442; }
+      .board .overlay .message.win {
+        background-color: #d4edda;
+        color: #155724; }
       .board .overlay .message p {
         margin: 0; }
       .board .overlay .message .title {

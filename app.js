@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -274,11 +274,11 @@ var _exception = __webpack_require__(1);
 
 var _exception2 = _interopRequireDefault(_exception);
 
-var _helpers = __webpack_require__(12);
+var _helpers = __webpack_require__(13);
 
-var _decorators = __webpack_require__(20);
+var _decorators = __webpack_require__(21);
 
-var _logger = __webpack_require__(22);
+var _logger = __webpack_require__(23);
 
 var _logger2 = _interopRequireDefault(_logger);
 
@@ -368,31 +368,356 @@ exports.logger = _logger2['default'];
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(4);
+"use strict";
 
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var STRAIGHT_DIRECTIONS = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
+var DIAGONAL_DIRECTIONS = [{ x: 1, y: 1 }, { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }];
+var ALL_DIRECTIONS = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 1 }, { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }];
+var MOVING_BEHAVIORS = {
+    // default: stops at first piece with option to kill an enemy piece
+    HITTING: 0,
+    // stopping is like hitting but without the option to kill (pawn)
+    STOPPING: 1
+};
+
+var Piece = function () {
+    function Piece(owner, name) {
+        _classCallCheck(this, Piece);
+
+        this.owner = owner;
+        this._name = name;
+        this.hasMoved = false;
+    }
+
+    _createClass(Piece, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            throw "NotImplemented";
+        }
+    }, {
+        key: "getMovesInDirection",
+        value: function getMovesInDirection(game, x, y, direction) {
+            var maxDistance = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+            var behaviour = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : MOVING_BEHAVIORS.HITTING;
+
+            var pos = { x: x, y: y };
+            var moves = [];
+            var distance = 0;
+
+            while (true) {
+                distance++;
+                if (distance > maxDistance) break;
+
+                pos.x += direction.x;
+                pos.y += direction.y;
+                try {
+                    var cell = game.getCell(pos.x, pos.y);
+                    if (!cell.tile.passable) break;
+
+                    if (cell.piece) {
+                        if (behaviour !== MOVING_BEHAVIORS.STOPPING && cell.piece.owner !== this.owner) moves.push({ x: pos.x, y: pos.y });
+                        break;
+                    }
+
+                    moves.push({ x: pos.x, y: pos.y });
+                } catch (err) {
+                    // break if OutsideOfBoard. else its an unexpected error
+                    if (err !== "OutsideOfBoard") throw err;
+                    break;
+                }
+            }
+            return moves;
+        }
+    }, {
+        key: "getOwnerDirection",
+        value: function getOwnerDirection() {
+            switch (this.owner.number) {
+                case 1:
+                    return { x: 0, y: -1 };
+                case 2:
+                    return { x: 0, y: 1 };
+                default:
+                    throw 'UnknownOwnerDirection';
+            }
+        }
+    }, {
+        key: "name",
+        get: function get() {
+            return this._name;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            throw "NotImplemented";
+        }
+    }]);
+
+    return Piece;
+}();
+
+var BlackWhiteChessPiece = function (_Piece) {
+    _inherits(BlackWhiteChessPiece, _Piece);
+
+    function BlackWhiteChessPiece(owner, name, filename) {
+        _classCallCheck(this, BlackWhiteChessPiece);
+
+        var _this = _possibleConstructorReturn(this, (BlackWhiteChessPiece.__proto__ || Object.getPrototypeOf(BlackWhiteChessPiece)).call(this, owner, name));
+
+        _this.filename = filename;
+        return _this;
+    }
+
+    _createClass(BlackWhiteChessPiece, [{
+        key: "class",
+        get: function get() {
+            if (this.owner.number === 1) return "white";
+            if (this.owner.number === 2) return "black";
+            throw "InvalidOwnerNumber";
+        }
+    }]);
+
+    return BlackWhiteChessPiece;
+}(Piece);
+
+var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
+    _inherits(Pawn, _BlackWhiteChessPiece);
+
+    function Pawn(owner) {
+        _classCallCheck(this, Pawn);
+
+        return _possibleConstructorReturn(this, (Pawn.__proto__ || Object.getPrototypeOf(Pawn)).call(this, owner, "Pawn"));
+    }
+
+    _createClass(Pawn, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var moves = [];
+
+            // a pawn can move two spaces if it hasn't moved yet
+            var distance = this.hasMoved ? 1 : 2;
+
+            // move in front
+            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, this.getOwnerDirection(), distance, MOVING_BEHAVIORS.STOPPING));
+
+            // diagonal moves - only available if the move can kill an opposing piece
+            var hittingMoves = [{ x: 1, y: this.getOwnerDirection().y }, { x: -1, y: this.getOwnerDirection().y }];
+            for (var d = 0; d < hittingMoves.length; d++) {
+                var possibleHittingMove = this.getMovesInDirection(game, x, y, hittingMoves[d], 1);
+                if (possibleHittingMove.length === 0) continue;
+                var possibleMove = possibleHittingMove[0];
+                // check for opposing piece
+                if (game.getCell(possibleMove).piece) moves.push(possibleMove);
+            }
+
+            // TODO: en passent - oder o eifach nid..
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-pawn-' + _get(Pawn.prototype.__proto__ || Object.getPrototypeOf(Pawn.prototype), "class", this);
+        }
+    }]);
+
+    return Pawn;
+}(BlackWhiteChessPiece);
+
+var Rook = exports.Rook = function (_BlackWhiteChessPiece2) {
+    _inherits(Rook, _BlackWhiteChessPiece2);
+
+    function Rook(owner) {
+        _classCallCheck(this, Rook);
+
+        return _possibleConstructorReturn(this, (Rook.__proto__ || Object.getPrototypeOf(Rook)).call(this, owner, "Rook"));
+    }
+
+    _createClass(Rook, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var moves = [];
+
+            for (var d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d]));
+            }
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-rook-' + _get(Rook.prototype.__proto__ || Object.getPrototypeOf(Rook.prototype), "class", this);
+        }
+    }]);
+
+    return Rook;
+}(BlackWhiteChessPiece);
+
+var Knight = exports.Knight = function (_BlackWhiteChessPiece3) {
+    _inherits(Knight, _BlackWhiteChessPiece3);
+
+    function Knight(owner) {
+        _classCallCheck(this, Knight);
+
+        return _possibleConstructorReturn(this, (Knight.__proto__ || Object.getPrototypeOf(Knight)).call(this, owner, "Knight"));
+    }
+
+    _createClass(Knight, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var relativeMoves = [{ x: 2, y: 1 }, { x: 2, y: -1 }, { x: -2, y: 1 }, { x: -2, y: -1 }, { x: 1, y: 2 }, { x: -1, y: 2 }, { x: 1, y: -2 }, { x: -1, y: -2 }];
+            var moves = [];
+
+            for (var d = 0; d < relativeMoves.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, relativeMoves[d], 1));
+            }
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-knight-' + _get(Knight.prototype.__proto__ || Object.getPrototypeOf(Knight.prototype), "class", this);
+        }
+    }]);
+
+    return Knight;
+}(BlackWhiteChessPiece);
+
+var Bishop = exports.Bishop = function (_BlackWhiteChessPiece4) {
+    _inherits(Bishop, _BlackWhiteChessPiece4);
+
+    function Bishop(owner) {
+        _classCallCheck(this, Bishop);
+
+        return _possibleConstructorReturn(this, (Bishop.__proto__ || Object.getPrototypeOf(Bishop)).call(this, owner, "Bishop"));
+    }
+
+    _createClass(Bishop, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var moves = [];
+
+            for (var d = 0; d < DIAGONAL_DIRECTIONS.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, DIAGONAL_DIRECTIONS[d]));
+            }
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-bishop-' + _get(Bishop.prototype.__proto__ || Object.getPrototypeOf(Bishop.prototype), "class", this);
+        }
+    }]);
+
+    return Bishop;
+}(BlackWhiteChessPiece);
+
+var Queen = exports.Queen = function (_BlackWhiteChessPiece5) {
+    _inherits(Queen, _BlackWhiteChessPiece5);
+
+    function Queen(owner) {
+        _classCallCheck(this, Queen);
+
+        return _possibleConstructorReturn(this, (Queen.__proto__ || Object.getPrototypeOf(Queen)).call(this, owner, "Queen"));
+    }
+
+    _createClass(Queen, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var moves = [];
+
+            for (var d = 0; d < ALL_DIRECTIONS.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d]));
+            }
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-queen-' + _get(Queen.prototype.__proto__ || Object.getPrototypeOf(Queen.prototype), "class", this);
+        }
+    }]);
+
+    return Queen;
+}(BlackWhiteChessPiece);
+
+var King = exports.King = function (_BlackWhiteChessPiece6) {
+    _inherits(King, _BlackWhiteChessPiece6);
+
+    function King(owner) {
+        _classCallCheck(this, King);
+
+        return _possibleConstructorReturn(this, (King.__proto__ || Object.getPrototypeOf(King)).call(this, owner, "King"));
+    }
+
+    _createClass(King, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var moves = [];
+
+            for (var d = 0; d < ALL_DIRECTIONS.length; d++) {
+                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d], 1));
+            }
+
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-king-' + _get(King.prototype.__proto__ || Object.getPrototypeOf(King.prototype), "class", this);
+        }
+    }]);
+
+    return King;
+}(BlackWhiteChessPiece);
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
+module.exports = __webpack_require__(5);
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
 
-var _gameserver = __webpack_require__(5);
+var _gameserver = __webpack_require__(6);
 
 var _gameserver2 = _interopRequireDefault(_gameserver);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // express
-var express = __webpack_require__(28);
+var express = __webpack_require__(30);
 var app = express();
 app.use(express.static('public'));
 
 var server = app.listen(8080);
 
 // io
-var io = __webpack_require__(29).listen(server);
+var io = __webpack_require__(31).listen(server);
 
 var gameserver = new _gameserver2.default();
 
@@ -401,7 +726,7 @@ io.on('connection', function (socket) {
 });
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -413,11 +738,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _player = __webpack_require__(6);
+var _player = __webpack_require__(7);
 
 var _player2 = _interopRequireDefault(_player);
 
-var _game = __webpack_require__(7);
+var _game = __webpack_require__(8);
 
 var _game2 = _interopRequireDefault(_game);
 
@@ -452,7 +777,7 @@ var GameServer = function () {
                     var result = this.game.execute(data);
 
                     if (result) {
-                        this.distributeActions([result]);
+                        this.distributeActions(result);
                     }
                 } catch (err) {
                     console.log(err);
@@ -476,6 +801,8 @@ var GameServer = function () {
                 return;
             }
 
+            if (!Array.isArray(actions)) actions = [actions];
+
             for (var _i = 0; _i < actions.length; _i++) {
                 player.emit('game action', actions[_i]);
             }
@@ -488,7 +815,7 @@ var GameServer = function () {
 exports.default = GameServer;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -510,7 +837,7 @@ var Player = function Player(name) {
 exports.default = Player;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -522,15 +849,21 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _cell = __webpack_require__(8);
+var _cell = __webpack_require__(9);
 
 var _cell2 = _interopRequireDefault(_cell);
 
-var _piece = __webpack_require__(26);
+var _piece = __webpack_require__(3);
 
 var _tile = __webpack_require__(27);
 
+var _kingdead = __webpack_require__(28);
+
+var _kingdead2 = _interopRequireDefault(_kingdead);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -573,6 +906,8 @@ var Game = function () {
         this.board[7][4].piece = new _piece.Queen(this.player1);
         this.board[0][3].piece = new _piece.King(this.player2);
         this.board[7][3].piece = new _piece.King(this.player1);
+
+        this.rules.loseConditions = [new _kingdead2.default()];
 
         // save coords on cell for easier lookup
         for (var y = 0; y < this.board.length; y++) {
@@ -657,6 +992,11 @@ var Game = function () {
                 this.currentMoveCache = [];
                 this.execute(symLogEntry);
                 console.log(symLogEntry);
+                var gameEnd = this.checkWinCondition();
+                if (gameEnd) {
+                    this.gameLog.push(gameEnd);
+                    return [symLogEntry, gameEnd];
+                }
                 return symLogEntry;
             }
             if (logEntry.action === 'sym move') {
@@ -686,6 +1026,51 @@ var Game = function () {
         key: 'getPossibleMoves',
         value: function getPossibleMoves(cell) {
             return cell.piece.getPossibleMoves(this, cell.x, cell.y);
+        }
+    }, {
+        key: 'checkWinCondition',
+        value: function checkWinCondition() {
+            var playersStillAlive = new Set([this.player1, this.player2]);
+            for (var i = 0; i < this.rules.loseConditions.length; i++) {
+                var losers = this.rules.loseConditions[i].checkCondition(this);
+                var _iteratorNormalCompletion = true;
+                var _didIteratorError = false;
+                var _iteratorError = undefined;
+
+                try {
+                    for (var _iterator = losers.values()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                        var loser = _step.value;
+
+                        playersStillAlive.delete(loser);
+                    }
+                } catch (err) {
+                    _didIteratorError = true;
+                    _iteratorError = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion && _iterator.return) {
+                            _iterator.return();
+                        }
+                    } finally {
+                        if (_didIteratorError) {
+                            throw _iteratorError;
+                        }
+                    }
+                }
+            }
+
+            switch (playersStillAlive.size) {
+                case 0:
+                    return {
+                        action: 'gameEnd',
+                        winner: 0 // number 0: draw
+                    };
+                case 1:
+                    return {
+                        action: 'gameEnd',
+                        winner: [].concat(_toConsumableArray(playersStillAlive))[0].number
+                    };
+            }
         }
     }, {
         key: 'getCell',
@@ -721,7 +1106,7 @@ var Game = function () {
 exports.default = Game;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -748,7 +1133,7 @@ var Cell = function () {
     _createClass(Cell, [{
         key: "render",
         value: function render() {
-            var template = __webpack_require__(9);
+            var template = __webpack_require__(10);
             var params = { cell: this, classes: this.classes.join(' ') };
             return template(params);
         }
@@ -772,10 +1157,10 @@ var Cell = function () {
 exports.default = Cell;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Handlebars = __webpack_require__(10);
+var Handlebars = __webpack_require__(11);
 function __default(obj) { return obj && (obj.__esModule ? obj["default"] : obj); }
 module.exports = (Handlebars["default"] || Handlebars).template({"1":function(container,depth0,helpers,partials,data) {
     var helper;
@@ -798,7 +1183,7 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 },"useData":true});
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -806,10 +1191,10 @@ module.exports = (Handlebars["default"] || Handlebars).template({"1":function(co
 
 // Create a simple path alias to allow browserify to resolve
 // the runtime on a supported path.
-module.exports = __webpack_require__(11)['default'];
+module.exports = __webpack_require__(12)['default'];
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -843,7 +1228,7 @@ var base = _interopRequireWildcard(_handlebarsBase);
 // Each of these augment the Handlebars object. No need to setup here.
 // (This is done to easily share code between commonjs and browse envs)
 
-var _handlebarsSafeString = __webpack_require__(23);
+var _handlebarsSafeString = __webpack_require__(24);
 
 var _handlebarsSafeString2 = _interopRequireDefault(_handlebarsSafeString);
 
@@ -855,11 +1240,11 @@ var _handlebarsUtils = __webpack_require__(0);
 
 var Utils = _interopRequireWildcard(_handlebarsUtils);
 
-var _handlebarsRuntime = __webpack_require__(24);
+var _handlebarsRuntime = __webpack_require__(25);
 
 var runtime = _interopRequireWildcard(_handlebarsRuntime);
 
-var _handlebarsNoConflict = __webpack_require__(25);
+var _handlebarsNoConflict = __webpack_require__(26);
 
 var _handlebarsNoConflict2 = _interopRequireDefault(_handlebarsNoConflict);
 
@@ -892,7 +1277,7 @@ exports['default'] = inst;
 module.exports = exports['default'];
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -906,31 +1291,31 @@ function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { 'default': obj };
 }
 
-var _helpersBlockHelperMissing = __webpack_require__(13);
+var _helpersBlockHelperMissing = __webpack_require__(14);
 
 var _helpersBlockHelperMissing2 = _interopRequireDefault(_helpersBlockHelperMissing);
 
-var _helpersEach = __webpack_require__(14);
+var _helpersEach = __webpack_require__(15);
 
 var _helpersEach2 = _interopRequireDefault(_helpersEach);
 
-var _helpersHelperMissing = __webpack_require__(15);
+var _helpersHelperMissing = __webpack_require__(16);
 
 var _helpersHelperMissing2 = _interopRequireDefault(_helpersHelperMissing);
 
-var _helpersIf = __webpack_require__(16);
+var _helpersIf = __webpack_require__(17);
 
 var _helpersIf2 = _interopRequireDefault(_helpersIf);
 
-var _helpersLog = __webpack_require__(17);
+var _helpersLog = __webpack_require__(18);
 
 var _helpersLog2 = _interopRequireDefault(_helpersLog);
 
-var _helpersLookup = __webpack_require__(18);
+var _helpersLookup = __webpack_require__(19);
 
 var _helpersLookup2 = _interopRequireDefault(_helpersLookup);
 
-var _helpersWith = __webpack_require__(19);
+var _helpersWith = __webpack_require__(20);
 
 var _helpersWith2 = _interopRequireDefault(_helpersWith);
 
@@ -945,7 +1330,7 @@ function registerDefaultHelpers(instance) {
 }
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -989,7 +1374,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1092,7 +1477,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1124,7 +1509,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1158,7 +1543,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1189,7 +1574,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1206,7 +1591,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1244,7 +1629,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1258,7 +1643,7 @@ function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { 'default': obj };
 }
 
-var _decoratorsInline = __webpack_require__(21);
+var _decoratorsInline = __webpack_require__(22);
 
 var _decoratorsInline2 = _interopRequireDefault(_decoratorsInline);
 
@@ -1267,7 +1652,7 @@ function registerDefaultDecorators(instance) {
 }
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1301,7 +1686,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1353,7 +1738,7 @@ exports['default'] = logger;
 module.exports = exports['default'];
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1373,7 +1758,7 @@ exports['default'] = SafeString;
 module.exports = exports['default'];
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1699,7 +2084,7 @@ function executeDecorators(fn, prog, container, depths, data, blockParams) {
 }
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1722,331 +2107,6 @@ exports['default'] = function (Handlebars) {
 };
 
 module.exports = exports['default'];
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var STRAIGHT_DIRECTIONS = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
-var DIAGONAL_DIRECTIONS = [{ x: 1, y: 1 }, { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }];
-var ALL_DIRECTIONS = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 1 }, { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }];
-var MOVING_BEHAVIORS = {
-    // default: stops at first piece with option to kill an enemy piece
-    HITTING: 0,
-    // stopping is like hitting but without the option to kill (pawn)
-    STOPPING: 1
-};
-
-var Piece = function () {
-    function Piece(owner, name) {
-        _classCallCheck(this, Piece);
-
-        this.owner = owner;
-        this._name = name;
-        this.hasMoved = false;
-    }
-
-    _createClass(Piece, [{
-        key: "getPossibleMoves",
-        value: function getPossibleMoves(game, x, y) {
-            throw "NotImplemented";
-        }
-    }, {
-        key: "getMovesInDirection",
-        value: function getMovesInDirection(game, x, y, direction) {
-            var maxDistance = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-            var behaviour = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : MOVING_BEHAVIORS.HITTING;
-
-            var pos = { x: x, y: y };
-            var moves = [];
-            var distance = 0;
-
-            while (true) {
-                distance++;
-                if (distance > maxDistance) break;
-
-                pos.x += direction.x;
-                pos.y += direction.y;
-                try {
-                    var cell = game.getCell(pos.x, pos.y);
-                    if (!cell.tile.passable) break;
-
-                    if (cell.piece) {
-                        if (behaviour !== MOVING_BEHAVIORS.STOPPING && cell.piece.owner !== this.owner) moves.push({ x: pos.x, y: pos.y });
-                        break;
-                    }
-
-                    moves.push({ x: pos.x, y: pos.y });
-                } catch (err) {
-                    // break if OutsideOfBoard. else its an unexpected error
-                    if (err !== "OutsideOfBoard") throw err;
-                    break;
-                }
-            }
-            return moves;
-        }
-    }, {
-        key: "getOwnerDirection",
-        value: function getOwnerDirection() {
-            switch (this.owner.number) {
-                case 1:
-                    return { x: 0, y: -1 };
-                case 2:
-                    return { x: 0, y: 1 };
-                default:
-                    throw 'UnknownOwnerDirection';
-            }
-        }
-    }, {
-        key: "name",
-        get: function get() {
-            return this._name;
-        }
-    }, {
-        key: "class",
-        get: function get() {
-            throw "NotImplemented";
-        }
-    }]);
-
-    return Piece;
-}();
-
-var BlackWhiteChessPiece = function (_Piece) {
-    _inherits(BlackWhiteChessPiece, _Piece);
-
-    function BlackWhiteChessPiece(owner, name, filename) {
-        _classCallCheck(this, BlackWhiteChessPiece);
-
-        var _this = _possibleConstructorReturn(this, (BlackWhiteChessPiece.__proto__ || Object.getPrototypeOf(BlackWhiteChessPiece)).call(this, owner, name));
-
-        _this.filename = filename;
-        return _this;
-    }
-
-    _createClass(BlackWhiteChessPiece, [{
-        key: "class",
-        get: function get() {
-            if (this.owner.number === 1) return "white";
-            if (this.owner.number === 2) return "black";
-            throw "InvalidOwnerNumber";
-        }
-    }]);
-
-    return BlackWhiteChessPiece;
-}(Piece);
-
-var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
-    _inherits(Pawn, _BlackWhiteChessPiece);
-
-    function Pawn(owner) {
-        _classCallCheck(this, Pawn);
-
-        return _possibleConstructorReturn(this, (Pawn.__proto__ || Object.getPrototypeOf(Pawn)).call(this, owner, "Pawn"));
-    }
-
-    _createClass(Pawn, [{
-        key: "getPossibleMoves",
-        value: function getPossibleMoves(game, x, y) {
-            var moves = [];
-
-            // a pawn can move two spaces if it hasn't moved yet
-            var distance = this.hasMoved ? 1 : 2;
-
-            // move in front
-            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, this.getOwnerDirection(), distance, MOVING_BEHAVIORS.STOPPING));
-
-            // diagonal moves - only available if the move can kill an opposing piece
-            var hittingMoves = [{ x: 1, y: this.getOwnerDirection().y }, { x: -1, y: this.getOwnerDirection().y }];
-            for (var d = 0; d < hittingMoves.length; d++) {
-                var possibleHittingMove = this.getMovesInDirection(game, x, y, hittingMoves[d], 1);
-                if (possibleHittingMove.length === 0) continue;
-                var possibleMove = possibleHittingMove[0];
-                // check for opposing piece
-                if (game.getCell(possibleMove).piece) moves.push(possibleMove);
-            }
-
-            // TODO: en passent - oder o eifach nid..
-
-            return moves;
-        }
-    }, {
-        key: "class",
-        get: function get() {
-            return 'piece-pawn-' + _get(Pawn.prototype.__proto__ || Object.getPrototypeOf(Pawn.prototype), "class", this);
-        }
-    }]);
-
-    return Pawn;
-}(BlackWhiteChessPiece);
-
-var Rook = exports.Rook = function (_BlackWhiteChessPiece2) {
-    _inherits(Rook, _BlackWhiteChessPiece2);
-
-    function Rook(owner) {
-        _classCallCheck(this, Rook);
-
-        return _possibleConstructorReturn(this, (Rook.__proto__ || Object.getPrototypeOf(Rook)).call(this, owner, "Rook"));
-    }
-
-    _createClass(Rook, [{
-        key: "getPossibleMoves",
-        value: function getPossibleMoves(game, x, y) {
-            var moves = [];
-
-            for (var d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
-                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d]));
-            }
-
-            return moves;
-        }
-    }, {
-        key: "class",
-        get: function get() {
-            return 'piece-rook-' + _get(Rook.prototype.__proto__ || Object.getPrototypeOf(Rook.prototype), "class", this);
-        }
-    }]);
-
-    return Rook;
-}(BlackWhiteChessPiece);
-
-var Knight = exports.Knight = function (_BlackWhiteChessPiece3) {
-    _inherits(Knight, _BlackWhiteChessPiece3);
-
-    function Knight(owner) {
-        _classCallCheck(this, Knight);
-
-        return _possibleConstructorReturn(this, (Knight.__proto__ || Object.getPrototypeOf(Knight)).call(this, owner, "Knight"));
-    }
-
-    _createClass(Knight, [{
-        key: "getPossibleMoves",
-        value: function getPossibleMoves(game, x, y) {
-            var relativeMoves = [{ x: 2, y: 1 }, { x: 2, y: -1 }, { x: -2, y: 1 }, { x: -2, y: -1 }, { x: 1, y: 2 }, { x: -1, y: 2 }, { x: 1, y: -2 }, { x: -1, y: -2 }];
-            var moves = [];
-
-            for (var d = 0; d < relativeMoves.length; d++) {
-                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, relativeMoves[d], 1));
-            }
-
-            return moves;
-        }
-    }, {
-        key: "class",
-        get: function get() {
-            return 'piece-knight-' + _get(Knight.prototype.__proto__ || Object.getPrototypeOf(Knight.prototype), "class", this);
-        }
-    }]);
-
-    return Knight;
-}(BlackWhiteChessPiece);
-
-var Bishop = exports.Bishop = function (_BlackWhiteChessPiece4) {
-    _inherits(Bishop, _BlackWhiteChessPiece4);
-
-    function Bishop(owner) {
-        _classCallCheck(this, Bishop);
-
-        return _possibleConstructorReturn(this, (Bishop.__proto__ || Object.getPrototypeOf(Bishop)).call(this, owner, "Bishop"));
-    }
-
-    _createClass(Bishop, [{
-        key: "getPossibleMoves",
-        value: function getPossibleMoves(game, x, y) {
-            var moves = [];
-
-            for (var d = 0; d < DIAGONAL_DIRECTIONS.length; d++) {
-                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, DIAGONAL_DIRECTIONS[d]));
-            }
-
-            return moves;
-        }
-    }, {
-        key: "class",
-        get: function get() {
-            return 'piece-bishop-' + _get(Bishop.prototype.__proto__ || Object.getPrototypeOf(Bishop.prototype), "class", this);
-        }
-    }]);
-
-    return Bishop;
-}(BlackWhiteChessPiece);
-
-var Queen = exports.Queen = function (_BlackWhiteChessPiece5) {
-    _inherits(Queen, _BlackWhiteChessPiece5);
-
-    function Queen(owner) {
-        _classCallCheck(this, Queen);
-
-        return _possibleConstructorReturn(this, (Queen.__proto__ || Object.getPrototypeOf(Queen)).call(this, owner, "Queen"));
-    }
-
-    _createClass(Queen, [{
-        key: "getPossibleMoves",
-        value: function getPossibleMoves(game, x, y) {
-            var moves = [];
-
-            for (var d = 0; d < ALL_DIRECTIONS.length; d++) {
-                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d]));
-            }
-
-            return moves;
-        }
-    }, {
-        key: "class",
-        get: function get() {
-            return 'piece-queen-' + _get(Queen.prototype.__proto__ || Object.getPrototypeOf(Queen.prototype), "class", this);
-        }
-    }]);
-
-    return Queen;
-}(BlackWhiteChessPiece);
-
-var King = exports.King = function (_BlackWhiteChessPiece6) {
-    _inherits(King, _BlackWhiteChessPiece6);
-
-    function King(owner) {
-        _classCallCheck(this, King);
-
-        return _possibleConstructorReturn(this, (King.__proto__ || Object.getPrototypeOf(King)).call(this, owner, "King"));
-    }
-
-    _createClass(King, [{
-        key: "getPossibleMoves",
-        value: function getPossibleMoves(game, x, y) {
-            var moves = [];
-
-            for (var d = 0; d < ALL_DIRECTIONS.length; d++) {
-                Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d], 1));
-            }
-
-            return moves;
-        }
-    }, {
-        key: "class",
-        get: function get() {
-            return 'piece-king-' + _get(King.prototype.__proto__ || Object.getPrototypeOf(King.prototype), "class", this);
-        }
-    }]);
-
-    return King;
-}(BlackWhiteChessPiece);
 
 /***/ }),
 /* 27 */
@@ -2126,12 +2186,101 @@ var WhiteTile = exports.WhiteTile = function (_Tile2) {
 
 /***/ }),
 /* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _losecondition = __webpack_require__(29);
+
+var _losecondition2 = _interopRequireDefault(_losecondition);
+
+var _piece = __webpack_require__(3);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var KingDead = function (_LoseCondition) {
+    _inherits(KingDead, _LoseCondition);
+
+    function KingDead() {
+        _classCallCheck(this, KingDead);
+
+        return _possibleConstructorReturn(this, (KingDead.__proto__ || Object.getPrototypeOf(KingDead)).apply(this, arguments));
+    }
+
+    _createClass(KingDead, [{
+        key: "checkCondition",
+        value: function checkCondition(game) {
+            var players = new Set([game.player1, game.player2]);
+            for (var y = 0; y < game.board.length; y++) {
+                for (var x = 0; x < game.board[y].length; x++) {
+                    if (game.board[y][x].piece instanceof _piece.King) players.delete(game.board[y][x].piece.owner);
+                }
+            }
+            return players;
+        }
+    }]);
+
+    return KingDead;
+}(_losecondition2.default);
+
+exports.default = KingDead;
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var LoseCondition = function () {
+    function LoseCondition() {
+        _classCallCheck(this, LoseCondition);
+    }
+
+    _createClass(LoseCondition, [{
+        key: 'checkCondition',
+
+        // checks if a player lost according to the condition
+        // return an array with all losing players
+        value: function checkCondition(game) {
+            throw 'NotImplementedError';
+        }
+    }]);
+
+    return LoseCondition;
+}();
+
+exports.default = LoseCondition;
+
+/***/ }),
+/* 30 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
 
 /***/ }),
-/* 29 */
+/* 31 */
 /***/ (function(module, exports) {
 
 module.exports = require("socket.io");

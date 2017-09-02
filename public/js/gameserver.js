@@ -25,7 +25,7 @@ export default class GameServer {
                 let result = this.game.execute(data);
 
                 if (result) {
-                    this.distributeActions([result]);
+                    this.distributeActions(result);
                 }
             } catch (err) {
                 console.log(err);
@@ -48,6 +48,9 @@ export default class GameServer {
             }
             return;
         }
+
+        if (!Array.isArray(actions))
+            actions = [actions];
 
         for (let i = 0; i < actions.length; i++) {
             player.emit('game action', actions[i]);
