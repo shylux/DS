@@ -744,7 +744,7 @@ var express = __webpack_require__(30);
 var app = express();
 app.use(express.static('public'));
 
-var server = app.listen(8080);
+var server = app.listen(3344);
 
 // io
 var io = __webpack_require__(31).listen(server);
