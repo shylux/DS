@@ -35,7 +35,7 @@
         background-size: contain;
       }
 
-      $chess-pieces: pawn rook knight bishop queen king;
+      $chess-pieces: god pawn rook knight bishop queen king;
 
       @each $piece in $chess-pieces {
         &.piece-#{$piece}-black:before {

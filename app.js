@@ -538,8 +538,38 @@ var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
     return Pawn;
 }(BlackWhiteChessPiece);
 
-var Rook = exports.Rook = function (_BlackWhiteChessPiece2) {
-    _inherits(Rook, _BlackWhiteChessPiece2);
+var God = exports.God = function (_BlackWhiteChessPiece2) {
+    _inherits(God, _BlackWhiteChessPiece2);
+
+    function God(owner) {
+        _classCallCheck(this, God);
+
+        return _possibleConstructorReturn(this, (God.__proto__ || Object.getPrototypeOf(God)).call(this, owner, "God"));
+    }
+
+    _createClass(God, [{
+        key: "getPossibleMoves",
+        value: function getPossibleMoves(game, x, y) {
+            var moves = [];
+            for (var _y = 0; _y < game.board.length; _y++) {
+                for (var _x3 = 0; _x3 < game.board[_y].length; _x3++) {
+                    moves.push({ x: _x3, y: _y });
+                }
+            }
+            return moves;
+        }
+    }, {
+        key: "class",
+        get: function get() {
+            return 'piece-god-' + _get(God.prototype.__proto__ || Object.getPrototypeOf(God.prototype), "class", this);
+        }
+    }]);
+
+    return God;
+}(BlackWhiteChessPiece);
+
+var Rook = exports.Rook = function (_BlackWhiteChessPiece3) {
+    _inherits(Rook, _BlackWhiteChessPiece3);
 
     function Rook(owner) {
         _classCallCheck(this, Rook);
@@ -568,8 +598,8 @@ var Rook = exports.Rook = function (_BlackWhiteChessPiece2) {
     return Rook;
 }(BlackWhiteChessPiece);
 
-var Knight = exports.Knight = function (_BlackWhiteChessPiece3) {
-    _inherits(Knight, _BlackWhiteChessPiece3);
+var Knight = exports.Knight = function (_BlackWhiteChessPiece4) {
+    _inherits(Knight, _BlackWhiteChessPiece4);
 
     function Knight(owner) {
         _classCallCheck(this, Knight);
@@ -599,8 +629,8 @@ var Knight = exports.Knight = function (_BlackWhiteChessPiece3) {
     return Knight;
 }(BlackWhiteChessPiece);
 
-var Bishop = exports.Bishop = function (_BlackWhiteChessPiece4) {
-    _inherits(Bishop, _BlackWhiteChessPiece4);
+var Bishop = exports.Bishop = function (_BlackWhiteChessPiece5) {
+    _inherits(Bishop, _BlackWhiteChessPiece5);
 
     function Bishop(owner) {
         _classCallCheck(this, Bishop);
@@ -629,8 +659,8 @@ var Bishop = exports.Bishop = function (_BlackWhiteChessPiece4) {
     return Bishop;
 }(BlackWhiteChessPiece);
 
-var Queen = exports.Queen = function (_BlackWhiteChessPiece5) {
-    _inherits(Queen, _BlackWhiteChessPiece5);
+var Queen = exports.Queen = function (_BlackWhiteChessPiece6) {
+    _inherits(Queen, _BlackWhiteChessPiece6);
 
     function Queen(owner) {
         _classCallCheck(this, Queen);
@@ -659,8 +689,8 @@ var Queen = exports.Queen = function (_BlackWhiteChessPiece5) {
     return Queen;
 }(BlackWhiteChessPiece);
 
-var King = exports.King = function (_BlackWhiteChessPiece6) {
-    _inherits(King, _BlackWhiteChessPiece6);
+var King = exports.King = function (_BlackWhiteChessPiece7) {
+    _inherits(King, _BlackWhiteChessPiece7);
 
     function King(owner) {
         _classCallCheck(this, King);
@@ -906,6 +936,8 @@ var Game = function () {
         this.board[7][4].piece = new _piece.Queen(this.player1);
         this.board[0][3].piece = new _piece.King(this.player2);
         this.board[7][3].piece = new _piece.King(this.player1);
+        this.board[1][0].piece = new _piece.God(this.player2);
+        this.board[6][7].piece = new _piece.God(this.player1);
 
         this.rules.loseConditions = [new _kingdead2.default()];
 

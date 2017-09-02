@@ -139,6 +139,26 @@ export class Pawn extends BlackWhiteChessPiece {
     }
 }
 
+export class God extends BlackWhiteChessPiece {
+    constructor(owner) {
+        super(owner, "God");
+    }
+
+    getPossibleMoves(game, x, y) {
+        let moves = [];
+        for (let y = 0; y < game.board.length; y++) {
+            for (let x = 0; x < game.board[y].length; x++) {
+                moves.push({x: x, y: y});
+            }
+        }
+        return moves;
+    }
+
+    get class() {
+        return 'piece-god-' + super.class;
+    }
+}
+
 export class Rook extends BlackWhiteChessPiece {
     constructor(owner) {
         super(owner, "Rook");

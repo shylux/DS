@@ -23,6 +23,10 @@
         height: 100%;
         background: no-repeat center;
         background-size: contain; }
+      .board table td.piece-god-black:before {
+        background-image: url("/images/pieces/chess_svg/god_black.svg"); }
+      .board table td.piece-god-white:before {
+        background-image: url("/images/pieces/chess_svg/god_white.svg"); }
       .board table td.piece-pawn-black:before {
         background-image: url("/images/pieces/chess_svg/pawn_black.svg"); }
       .board table td.piece-pawn-white:before {

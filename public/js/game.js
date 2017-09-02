@@ -1,5 +1,5 @@
 import Cell from './cell'
-import {Pawn, Rook, Knight, Bishop, Queen, King} from './piece'
+import {God, Pawn, Rook, Knight, Bishop, Queen, King} from './piece'
 import {WhiteTile, BlackTile} from './tile';
 import KingDead from "./game_types/lose_conditions/kingdead";
 
@@ -40,6 +40,8 @@ export default class Game {
         this.board[7][4].piece = new Queen(this.player1);
         this.board[0][3].piece = new King(this.player2);
         this.board[7][3].piece = new King(this.player1);
+        this.board[1][0].piece = new God(this.player2);
+        this.board[6][7].piece = new God(this.player1);
 
         this.rules.loseConditions = [new KingDead()];
 

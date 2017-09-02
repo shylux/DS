@@ -104,10 +104,11 @@ export default class GameMaster {
         if (logEntry.action === 'gameEnd') {
             if (logEntry.winner === 0) {
                 this.showNotification('Draw', 'The game ended in a draw.');
-            }
-            if (logEntry.winner === this.localPlayer.number) {
+
+            } else if (logEntry.winner === this.localPlayer.number) {
                 $('.message', this.html).addClass('win');
                 this.showNotification('Winner', 'You won this game.');
+
             } else {
                 $('.message', this.html).addClass('lose');
                 this.showNotification('2nd Place', 'You lost this game');
