@@ -1,11 +1,15 @@
 import Cell from './cell'
 import {God, Pawn, Rook, Knight, Bishop, Queen, King} from './piece'
-import {WhiteTile, BlackTile} from './tile';
-import KingDead from "./game_types/lose_conditions/kingdead";
+import {WhiteTile, BlackTile} from './tile'
+import KingDead from './game_types/lose_conditions/kingdead'
+import guid from './utils/guid'
 
 export default class Game {
-    constructor(rules, player1, player2) {
+    constructor(rules, name, player1, player2) {
+        this.id = guid();
+        this.name = name;
         this.rules = rules;
+        this.created = new Date();
         // stores all moves of the game
         this.gameLog = [];
         // stores moves of players until every player has submitted

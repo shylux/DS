@@ -786,7 +786,7 @@ var GameServer = function () {
         _classCallCheck(this, GameServer);
 
         this.players = [];
-        this.game = new _game2.default({}, new _player2.default('Mew'), new _player2.default('Mewtwo'));
+        this.games = [new _game2.default({}, 'Mew\'s Game', new _player2.default('Mew'), new _player2.default('Mewtwo'))];
     }
 
     _createClass(GameServer, [{
@@ -794,11 +794,13 @@ var GameServer = function () {
         value: function connect(socket) {
             this.players.push(socket);
 
+            socket.emit('list games', this.games);
+
             // push game state
-            socket.emit('setup game', { rules: {}, player1: this.game.player1.name, player2: this.game.player2.name });
-            for (var i = 0; i < this.game.gameLog.length; i++) {
-                socket.emit('game action', this.game.gameLog[i]);
-            }
+            // socket.emit('setup game', {rules: {}, player1: this.game.player1.name, player2: this.game.player2.name});
+            // for (let i = 0; i < this.game.gameLog.length; i++) {
+            //     socket.emit('game action', this.game.gameLog[i]);
+            // }
 
             socket.on('game action', function (data) {
                 console.log(data);
@@ -891,6 +893,10 @@ var _kingdead = __webpack_require__(28);
 
 var _kingdead2 = _interopRequireDefault(_kingdead);
 
+var _guid = __webpack_require__(32);
+
+var _guid2 = _interopRequireDefault(_guid);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -898,10 +904,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Game = function () {
-    function Game(rules, player1, player2) {
+    function Game(rules, name, player1, player2) {
         _classCallCheck(this, Game);
 
+        this.id = (0, _guid2.default)();
+        this.name = name;
         this.rules = rules;
+        this.created = new Date();
         // stores all moves of the game
         this.gameLog = [];
         // stores moves of players until every player has submitted
@@ -2316,6 +2325,25 @@ module.exports = require("express");
 /***/ (function(module, exports) {
 
 module.exports = require("socket.io");
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = guid;
+// from https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+function guid() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
 
 /***/ })
 /******/ ]);

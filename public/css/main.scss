@@ -82,6 +82,42 @@ header {
   }
 }
 
+#games {
+  display: none;
+
+  .game {
+    width: 180px;
+    min-height: 110px;
+    padding: 10px 20px 10px 10px;
+
+    border: 1px solid black;
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 5px black;
+
+    cursor: pointer;
+    &:hover {
+      box-shadow: 0 0 8px 1px black;
+    }
+
+    .name {
+      font-weight: bold;
+      margin-bottom: 5px;
+      border-bottom: 1px solid gray;
+    }
+  }
+}
+
 #board-wrapper {
   padding: 10px 0;
+}
+
+body.logged-in {
+  #user .info,
+  #games {
+    display: block;
+  }
+  #login {
+    display: none;
+  }
 }
