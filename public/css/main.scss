@@ -30,6 +30,20 @@ h1 {
   padding: 0 1em;
 }
 
+input {
+  display: block;
+  font-size: 1em;
+  padding: 6px 10px;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 2px;
+  border: none;
+}
+input[type=submit] {
+  background-color: dimgray;
+  cursor: pointer;
+}
+
 header {
   clear: both;
   overflow: auto;
@@ -44,20 +58,6 @@ header {
     > * > * {
       float: left;
       height: 35px;
-    }
-
-    input {
-      display: block;
-      font-size: 1em;
-      padding: 6px 10px;
-      margin: 0;
-      box-sizing: border-box;
-      border-radius: 2px;
-      border: none;
-    }
-    input[type=submit] {
-      background-color: dimgray;
-      cursor: pointer;
     }
 
     #login {
@@ -82,10 +82,87 @@ header {
   }
 }
 
+#creator {
+  display: none;
+
+  > div {
+    overflow: auto;
+    margin-bottom: 20px;
+
+    // left pane
+    > label {
+      float: left;
+      clear: both;
+      width: 100px;
+      margin-top: 4px;
+    }
+  }
+
+  // right pane
+  > input,
+  #ruleset {
+    float: left;
+    width: 215px;
+  }
+
+  #ruleset {
+    input {
+      display: none;
+
+      &:checked+label {
+        background-color: dimgray;
+      }
+    }
+    label {
+      display: block;
+      font-size: 1em;
+      padding: 10px 20px;
+      cursor: pointer;
+
+      $border: 3px solid gray;
+      $border-radius: 5px;
+
+      border: $border;
+      border-top: none;
+
+      &:first-of-type {
+        border-top: $border;
+        border-top-left-radius: $border-radius;
+        border-top-right-radius: $border-radius;
+      }
+      &:last-of-type {
+        border-bottom: $border;
+        border-bottom-left-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+      }
+    }
+  }
+
+  input[type=submit] {
+    margin-left: 100px;
+  }
+}
+
 #games {
   display: none;
 
-  .game {
+  #mygames-header {
+    clear: both;
+    overflow: auto;
+
+    > * {
+      float: left;
+      margin: 20px 0;
+    }
+
+    #create-game {
+      background-color: #d4edda;
+      margin-left: 20px;
+    }
+  }
+
+  .game,
+  .lobby {
     width: 180px;
     min-height: 110px;
     padding: 10px 20px 10px 10px;
@@ -95,15 +172,24 @@ header {
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 5px black;
 
-    cursor: pointer;
-    &:hover {
-      box-shadow: 0 0 8px 1px black;
-    }
-
     .name {
       font-weight: bold;
       margin-bottom: 5px;
       border-bottom: 1px solid gray;
+    }
+
+    .ruleset {
+      font-weight: bold;
+    }
+    input[type=submit]{
+      width: 60%;
+      margin: 10px auto;
+    }
+  }
+  .game {
+    cursor: pointer;
+    &:hover {
+      box-shadow: 0 0 8px 1px black;
     }
   }
 }

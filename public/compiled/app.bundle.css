@@ -104,6 +104,19 @@ h1 {
   margin: 0 auto;
   padding: 0 1em; }
 
+input {
+  display: block;
+  font-size: 1em;
+  padding: 6px 10px;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 2px;
+  border: none; }
+
+input[type=submit] {
+  background-color: dimgray;
+  cursor: pointer; }
+
 header {
   clear: both;
   overflow: auto; }
@@ -115,17 +128,6 @@ header {
     header #user > * > * {
       float: left;
       height: 35px; }
-    header #user input {
-      display: block;
-      font-size: 1em;
-      padding: 6px 10px;
-      margin: 0;
-      box-sizing: border-box;
-      border-radius: 2px;
-      border: none; }
-    header #user input[type=submit] {
-      background-color: dimgray;
-      cursor: pointer; }
     header #user #login .username {
       border-bottom-right-radius: 0;
       border-top-right-radius: 0; }
@@ -138,23 +140,78 @@ header {
         line-height: 35px;
         margin-right: 10px; }
 
+#creator {
+  display: none; }
+  #creator > div {
+    overflow: auto;
+    margin-bottom: 20px; }
+    #creator > div > label {
+      float: left;
+      clear: both;
+      width: 100px;
+      margin-top: 4px; }
+  #creator > input,
+  #creator #ruleset {
+    float: left;
+    width: 215px; }
+  #creator #ruleset input {
+    display: none; }
+    #creator #ruleset input:checked + label {
+      background-color: dimgray; }
+  #creator #ruleset label {
+    display: block;
+    font-size: 1em;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 3px solid gray;
+    border-top: none; }
+    #creator #ruleset label:first-of-type {
+      border-top: 3px solid gray;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px; }
+    #creator #ruleset label:last-of-type {
+      border-bottom: 3px solid gray;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px; }
+  #creator input[type=submit] {
+    margin-left: 100px; }
+
 #games {
   display: none; }
-  #games .game {
+  #games #mygames-header {
+    clear: both;
+    overflow: auto; }
+    #games #mygames-header > * {
+      float: left;
+      margin: 20px 0; }
+    #games #mygames-header #create-game {
+      background-color: #d4edda;
+      margin-left: 20px; }
+  #games .game,
+  #games .lobby {
     width: 180px;
     min-height: 110px;
     padding: 10px 20px 10px 10px;
     border: 1px solid black;
     border-radius: 2px;
     background-color: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0 5px black;
-    cursor: pointer; }
-    #games .game:hover {
-      box-shadow: 0 0 8px 1px black; }
-    #games .game .name {
+    box-shadow: 0 0 5px black; }
+    #games .game .name,
+    #games .lobby .name {
       font-weight: bold;
       margin-bottom: 5px;
       border-bottom: 1px solid gray; }
+    #games .game .ruleset,
+    #games .lobby .ruleset {
+      font-weight: bold; }
+    #games .game input[type=submit],
+    #games .lobby input[type=submit] {
+      width: 60%;
+      margin: 10px auto; }
+  #games .game {
+    cursor: pointer; }
+    #games .game:hover {
+      box-shadow: 0 0 8px 1px black; }
 
 #board-wrapper {
   padding: 10px 0; }

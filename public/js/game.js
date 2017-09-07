@@ -1,8 +1,7 @@
 import Cell from './cell'
-import {God, Pawn, Rook, Knight, Bishop, Queen, King} from './piece'
 import {WhiteTile, BlackTile} from './tile'
-import KingDead from './game_types/lose_conditions/kingdead'
 import guid from './utils/guid'
+import {PIECE_REGISTRY} from "./game_types/pieceregistry";
 
 export default class Game {
     constructor(rules, name, player1, player2) {
@@ -20,34 +19,9 @@ export default class Game {
         this.player2.number = 2;
         this.playerCount = 2;
 
-        this.board = this.generateCheckedBoard(8, 8);
-        this.height = this.board.length;
-        this.width = this.board[0].length;
-
-        for (let x = 0; x < 8; x++) {
-            this.board[1][x].piece = new Pawn(this.player2);
-            this.board[6][x].piece = new Pawn(this.player1);
-        }
-        this.board[0][0].piece = new Rook(this.player2);
-        this.board[0][7].piece = new Rook(this.player2);
-        this.board[7][0].piece = new Rook(this.player1);
-        this.board[7][7].piece = new Rook(this.player1);
-        this.board[0][1].piece = new Knight(this.player2);
-        this.board[0][6].piece = new Knight(this.player2);
-        this.board[7][1].piece = new Knight(this.player1);
-        this.board[7][6].piece = new Knight(this.player1);
-        this.board[0][2].piece = new Bishop(this.player2);
-        this.board[0][5].piece = new Bishop(this.player2);
-        this.board[7][2].piece = new Bishop(this.player1);
-        this.board[7][5].piece = new Bishop(this.player1);
-        this.board[0][4].piece = new Queen(this.player2);
-        this.board[7][4].piece = new Queen(this.player1);
-        this.board[0][3].piece = new King(this.player2);
-        this.board[7][3].piece = new King(this.player1);
-        this.board[1][0].piece = new God(this.player2);
-        this.board[6][7].piece = new God(this.player1);
-
-        this.rules.loseConditions = [new KingDead()];
+        this.board = this.generateCheckedBoard(rules.boardWidth, rules.boardHeight);
+        this.height = rules.boardHeight;
+        this.width = rules.boardWidth;
 
         // save coords on cell for easier lookup
         for (let y = 0; y < this.board.length; y++) {
@@ -57,11 +31,15 @@ export default class Game {
                 cell.y = y;
             }
         }
+
+        for (let logEntry of rules.setupMoves()) {
+            this.execute(logEntry);
+        }
     }
 
     // generates a logEntry for a move
     // this logEntry can then be executed by all players
-    prepareMove(sourceCell, targetCell) {
+    static prepareMove(sourceCell, targetCell) {
         if (!sourceCell.piece) throw 'NoPieceToMove';
 
         let logEntry = {
@@ -76,6 +54,17 @@ export default class Game {
         if (targetCell.piece)
             logEntry.killedPieceClass = targetCell.piece.class;
 
+        return logEntry;
+    }
+
+    static preparePlacePiece(x, y, playerNumber, pieceName) {
+        let logEntry = {
+            action: 'place piece',
+            pieceName: pieceName,
+            playerNumber: playerNumber,
+            x: x,
+            y: y
+        };
         return logEntry;
     }
 
@@ -160,6 +149,14 @@ export default class Game {
 
             this.gameLog.push(logEntry);
         }
+
+        if (logEntry.action === 'place piece') {
+            let pieceClass = PIECE_REGISTRY[logEntry.pieceName];
+            let player = this.getPlayer(logEntry.playerNumber);
+            let piece = new pieceClass(player);
+            let cell = this.getCell(logEntry);
+            cell.piece = piece;
+        }
     }
 
     getPossibleMoves(cell) {
@@ -200,6 +197,14 @@ export default class Game {
         let row = this.board[y];
         if (x < 0 || x >= row.length) throw "OutsideOfBoard";
         return row[x];
+    }
+
+    getPlayer(playerNumber) {
+        if (playerNumber === 1)
+            return this.player1;
+        if (playerNumber === 2)
+            return this.player2;
+        throw "InvalidPlayerNumber";
     }
 
     generateCheckedBoard(width, height) {

@@ -10,7 +10,7 @@ const server = app.listen(3344);
 // io
 const io = require('socket.io').listen(server);
 
-var gameserver = new GameServer();
+let gameserver = new GameServer();
 
 io.on('connection', function(socket){
     gameserver.connect(socket);

@@ -1,0 +1,12 @@
+<div class="lobby" data-id="{{id}}">
+    <div class="name">{{name}}</div>
+    <div class="ruleset">{{ruleset}}</div>
+    <div class="players">Players: {{player}}</div>
+    <div class="created">{{created}} ago</div>
+    {{#if joinable}}
+        <input type="submit" class="join" value="Join">
+    {{/if}}
+    {{#unless joinable}}
+        <input type="submit" value="Waiting..." disabled>
+    {{/unless}}
+</div>

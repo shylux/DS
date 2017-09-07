@@ -1,18 +1,62 @@
-import Player from './player'
-import Game from './game'
+import guid from "./utils/guid";
+import {RULE_SETS} from "./game_types/rulesets";
+import Player from "./player";
+import Game from "./game";
 
 // server side
 export default class GameServer {
 
     constructor() {
         this.players = [];
-        this.games = [new Game({}, 'Mew\'s Game', new Player('Mew'), new Player('Mewtwo'))];
+        this.games = [];
+        this.lobbys = [{
+            id: guid(),
+            created: new Date(),
+            ruleset: 'chess',
+            name: 'Init Game',
+            player: 'root'
+        }];
     }
 
     connect(socket) {
         this.players.push(socket);
 
-        socket.emit('list games', this.games);
+        socket.emit('list games', {
+            games: this.games,
+            lobbys: this.lobbys
+        });
+
+        socket.on('create lobby', function(data) {
+            data.id = guid();
+            data.created = new Date();
+            this.lobbys.push(data);
+            socket.emit('reload');
+        }.bind(this));
+
+        socket.on('join game', function(data) {
+            for (let lobby of this.lobbys) {
+                if (lobby.id === data.id) {
+                    this.lobbys.splice(this.lobbys.indexOf(lobby), 1);
+                    let game = new Game(
+                        RULE_SETS[lobby.ruleset],
+                        lobby.name,
+                        new Player(lobby.player),
+                        new Player(data.username));
+                    this.games.push(game);
+                    socket.emit('setup game', game);
+                    break;
+                }
+            }
+        }.bind(this));
+
+        socket.on('open game', function(id) {
+            for (let game of this.games) {
+                if (game.id === id) {
+                    socket.emit('setup game', game);
+                    break;
+                }
+            }
+        }.bind(this));
 
         // push game state
         // socket.emit('setup game', {rules: {}, player1: this.game.player1.name, player2: this.game.player2.name});

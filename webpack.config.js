@@ -27,7 +27,7 @@ var wbloaders = [
 ];
 
 module.exports = [{
-    entry: ['./public/js/client.js', './public/css/main.scss'],
+    entry: ['babel-polyfill', './public/js/client.js', './public/css/main.scss'],
     output: {
         path: path.resolve(__dirname, 'public/compiled'),
         filename: 'app.bundle.js'
@@ -55,7 +55,7 @@ module.exports = [{
 {
     target: 'node',
     externals: [nodeExternals()],
-    entry: ['./server.js'],
+    entry: ['babel-polyfill', './server.js'],
     output: {
         filename: 'app.js'
     },

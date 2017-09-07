@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
 
-    <title>Dungeon Strategist</title>
-    <meta name="description" content="A boardgame in progress.">
+    <title>Symmetric Chess</title>
+    <meta name="description" content="Play chess like games while doing simultaneous moves.">
     <meta name="author" content="Shylux">
 
     <link rel="stylesheet" href="compiled/app.bundle.css">
@@ -31,9 +31,30 @@
         </div>
     </header>
 
+    <form id="creator" class="wrapped">
+        <h2>Create Game</h2>
+        <div>
+            <label for="gamename">Name</label>
+            <input id="gamename" placeholder="Users's Game">
+        </div>
+        <div>
+            <label>Ruleset</label>
+            <div id="ruleset">
+                <input id="ruleset-chess" type="radio" name="ruleset" value="chess" checked><label for="ruleset-chess">Chess</label>
+                <input id="ruleset-small-chess" type="radio" name="ruleset" value="small-chess"><label for="ruleset-small-chess">Small Chess</label>
+            </div>
+        </div>
+        <input type="submit" value="Create">
+    </form>
+
     <div id="games" class="wrapped">
-        <h2>My Games</h2>
+        <div id="mygames-header">
+            <h2>My Games</h2>
+            <input type="submit" id="create-game" value="Create Game">
+        </div>
         <div id="mygames"></div>
+        <h2>Lobby's</h2>
+        <div id="lobbys"></div>
         <h2>Spectate Game</h2>
         <div id="spectategames"></div>
     </div>

@@ -1,13 +1,13 @@
 import Player from './player'
 import Game from './game'
+import {RULE_SETS} from './game_types/rulesets'
 
 // client side
 export default class GameMaster {
-    constructor(socket, client, data) {
+    constructor(socket, client, game) {
         // setup game based on 'setup game' data from server
-
-        let player1 = new Player(data.player1);
-        let player2 = new Player(data.player2);
+        let player1 = new Player(game.player1.name);
+        let player2 = new Player(game.player2.name);
 
         this.localPlayer = null;
         if (player1.name === client.username)
@@ -15,7 +15,7 @@ export default class GameMaster {
         if (player2.name === client.username)
             this.localPlayer = player2;
 
-        this.game = new Game({}, player1, player2);
+        this.game = new Game(RULE_SETS[game.rules.id], game.name, player1, player2);
         this.render();
 
         $('#board-wrapper').append(this.html);
@@ -60,7 +60,7 @@ export default class GameMaster {
             let sourceJqCell = $('td.selected', this.html);
             let sourceCell = this.getCell(sourceJqCell);
 
-            let logEntry = this.game.prepareMove(sourceCell, cell);
+            let logEntry = Game.prepareMove(sourceCell, cell);
 
             this.deselectPiece();
 

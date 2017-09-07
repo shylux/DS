@@ -1,18 +1,25 @@
 import {readCookie, createCookie, eraseCookie} from './utils/cookie'
 import GameMaster from './gamemaster'
 import timeSince from "./utils/timeSince";
+import {RULE_SETS} from "./game_types/rulesets";
+
 
 class Client {
     constructor(username) {
         this.login(username);
+        this.setupCreateGame();
         this.socket = io();
 
-        this.socket.on('setup game', function (data) {
-            this.gamemaster = new GameMaster(this.socket, this, data);
+        this.socket.on('setup game', function (game) {
+            this.gamemaster = new GameMaster(this.socket, this, game);
         }.bind(this));
 
         this.socket.on('list games', function (data) {
             this.listGames(data);
+        }.bind(this));
+
+        this.socket.on('reload', function() {
+            location.reload();
         }.bind(this));
     }
 
@@ -29,7 +36,29 @@ class Client {
     }
 
     listGames(data) {
-        for (let game of data) {
+        // lobbys
+        for (let lobby of data.lobbys) {
+            let template = require("../templates/lobby.hbs");
+            let html = template({
+                id: lobby.id,
+                name: lobby.name,
+                ruleset: RULE_SETS[lobby.ruleset].name,
+                player: lobby.player,
+                created: timeSince(new Date(lobby.created)),
+                joinable: (lobby.player !== this.username)
+            });
+            $('#lobbys').prepend(html);
+        }
+        $(document).on('click', '.lobby .join', function(e) {
+            let id = $(e.target).parents('.lobby').data('id');
+            this.socket.emit('join game', {
+                id: id,
+                username: this.username
+            });
+        }.bind(this));
+
+        // games
+        for (let game of data.games) {
             let template = require("../templates/gamepreview.hbs");
             let html = template({
                 id: game.id,
@@ -45,6 +74,34 @@ class Client {
                 $('#spectategames').prepend(html);
             }
         }
+        $(document).on('click', '#games .game', function(e) {
+            let id = $(e.target).data('id');
+            this.socket.emit('open game', id);
+        }.bind(this));
+    }
+
+    setupCreateGame() {
+        $('#gamename').attr('default', this.defaultGameName());
+        $('#create-game').on('click', function() {
+            $('#creator').slideToggle();
+        });
+        $('#creator').on('submit', this.createGame.bind(this));
+    }
+
+    defaultGameName() {
+        return this.username + "'s Game";
+    }
+
+    createGame(event) {
+        event.preventDefault();
+        let name = $('#gamename').val();
+        if (name.length === 0)
+            name = this.defaultGameName();
+        this.socket.emit('create lobby', {
+           player: this.username,
+           name: name,
+           ruleset: $('input[name=ruleset]:checked').val()
+        });
     }
 }
 
