@@ -7,7 +7,7 @@ import Game from "./game";
 export default class GameServer {
 
     constructor() {
-        this.players = [];
+        this.players = {};
         this.games = [];
         this.lobbys = [{
             id: guid(),
@@ -19,12 +19,21 @@ export default class GameServer {
     }
 
     connect(socket) {
-        this.players.push(socket);
+        let sessionID = guid();
+        this.players[sessionID] = {
+            sessionID: sessionID,
+            socket: socket
+        };
 
         socket.emit('list games', {
             games: this.games,
             lobbys: this.lobbys
         });
+
+        socket.on('login', function(username) {
+            this.players[sessionID].username = username;
+            console.log(username + ' logged in');
+        }.bind(this));
 
         socket.on('create lobby', function(data) {
             data.id = guid();
@@ -33,17 +42,19 @@ export default class GameServer {
             socket.emit('reload');
         }.bind(this));
 
-        socket.on('join game', function(data) {
+        socket.on('join game', function(id) {
             for (let lobby of this.lobbys) {
-                if (lobby.id === data.id) {
+                if (lobby.id === id) {
                     this.lobbys.splice(this.lobbys.indexOf(lobby), 1);
                     let game = new Game(
                         RULE_SETS[lobby.ruleset],
                         lobby.name,
                         new Player(lobby.player),
-                        new Player(data.username));
+                        new Player(this.players[sessionID].username),
+                        true);
                     this.games.push(game);
-                    socket.emit('setup game', game);
+
+                    this.openGame(sessionID, game);
                     break;
                 }
             }
@@ -52,26 +63,21 @@ export default class GameServer {
         socket.on('open game', function(id) {
             for (let game of this.games) {
                 if (game.id === id) {
-                    socket.emit('setup game', game);
+                    this.openGame(sessionID, game);
                     break;
                 }
             }
         }.bind(this));
 
-        // push game state
-        // socket.emit('setup game', {rules: {}, player1: this.game.player1.name, player2: this.game.player2.name});
-        // for (let i = 0; i < this.game.gameLog.length; i++) {
-        //     socket.emit('game action', this.game.gameLog[i]);
-        // }
-
         socket.on('game action', function(data) {
             console.log(data);
+            let game = this.players[sessionID].game;
 
             try {
-                let result = this.game.execute(data);
+                let result = game.execute(data);
 
                 if (result) {
-                    this.distributeActions(result);
+                    this.distributeActions(game, result);
                 }
             } catch (err) {
                 console.log(err);
@@ -82,15 +88,26 @@ export default class GameServer {
 
         socket.on('disconnect', function(){
             console.log('user disconnected');
-            this.players.splice(this.players.indexOf(socket), 1);
+            delete this.players[sessionID];
         }.bind(this));
     }
 
-    distributeActions(actions, player) {
-        // no player: distribute to every player
-        if (player === undefined) {
-            for (let i = 0; i < this.players.length; i++) {
-                this.distributeActions(actions, this.players[i]);
+    openGame(sessionID, game) {
+        this.players[sessionID].game = game;
+        let socket = this.players[sessionID].socket;
+        socket.emit('setup game', game);
+
+        for (let action of game.gameLog) {
+            socket.emit('game action', action);
+        }
+    }
+
+    distributeActions(game, actions, sessionID) {
+        // no socket: distribute to every player in this game
+        if (sessionID === undefined) {
+            for (let sessionID of Object.keys(this.players)) {
+                if (this.players[sessionID].game === game)
+                    this.distributeActions(game, actions, sessionID);
             }
             return;
         }
@@ -98,8 +115,8 @@ export default class GameServer {
         if (!Array.isArray(actions))
             actions = [actions];
 
-        for (let i = 0; i < actions.length; i++) {
-            player.emit('game action', actions[i]);
+        for (let action of actions) {
+            this.players[sessionID].socket.emit('game action', action);
         }
     }
 }

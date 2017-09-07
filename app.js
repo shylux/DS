@@ -443,7 +443,7 @@ var GameServer = function () {
     function GameServer() {
         _classCallCheck(this, GameServer);
 
-        this.players = [];
+        this.players = {};
         this.games = [];
         this.lobbys = [{
             id: (0, _guid2.default)(),
@@ -457,12 +457,21 @@ var GameServer = function () {
     _createClass(GameServer, [{
         key: "connect",
         value: function connect(socket) {
-            this.players.push(socket);
+            var sessionID = (0, _guid2.default)();
+            this.players[sessionID] = {
+                sessionID: sessionID,
+                socket: socket
+            };
 
             socket.emit('list games', {
                 games: this.games,
                 lobbys: this.lobbys
             });
+
+            socket.on('login', function (username) {
+                this.players[sessionID].username = username;
+                console.log(username + ' logged in');
+            }.bind(this));
 
             socket.on('create lobby', function (data) {
                 data.id = (0, _guid2.default)();
@@ -471,7 +480,7 @@ var GameServer = function () {
                 socket.emit('reload');
             }.bind(this));
 
-            socket.on('join game', function (data) {
+            socket.on('join game', function (id) {
                 var _iteratorNormalCompletion = true;
                 var _didIteratorError = false;
                 var _iteratorError = undefined;
@@ -480,11 +489,12 @@ var GameServer = function () {
                     for (var _iterator = this.lobbys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                         var lobby = _step.value;
 
-                        if (lobby.id === data.id) {
+                        if (lobby.id === id) {
                             this.lobbys.splice(this.lobbys.indexOf(lobby), 1);
-                            var game = new _game2.default(_rulesets.RULE_SETS[lobby.ruleset], lobby.name, new _player2.default(lobby.player), new _player2.default(data.username));
+                            var game = new _game2.default(_rulesets.RULE_SETS[lobby.ruleset], lobby.name, new _player2.default(lobby.player), new _player2.default(this.players[sessionID].username), true);
                             this.games.push(game);
-                            socket.emit('setup game', game);
+
+                            this.openGame(sessionID, game);
                             break;
                         }
                     }
@@ -514,7 +524,7 @@ var GameServer = function () {
                         var game = _step2.value;
 
                         if (game.id === id) {
-                            socket.emit('setup game', game);
+                            this.openGame(sessionID, game);
                             break;
                         }
                     }
@@ -534,20 +544,15 @@ var GameServer = function () {
                 }
             }.bind(this));
 
-            // push game state
-            // socket.emit('setup game', {rules: {}, player1: this.game.player1.name, player2: this.game.player2.name});
-            // for (let i = 0; i < this.game.gameLog.length; i++) {
-            //     socket.emit('game action', this.game.gameLog[i]);
-            // }
-
             socket.on('game action', function (data) {
                 console.log(data);
+                var game = this.players[sessionID].game;
 
                 try {
-                    var result = this.game.execute(data);
+                    var result = game.execute(data);
 
                     if (result) {
-                        this.distributeActions(result);
+                        this.distributeActions(game, result);
                     }
                 } catch (err) {
                     console.log(err);
@@ -557,24 +562,99 @@ var GameServer = function () {
 
             socket.on('disconnect', function () {
                 console.log('user disconnected');
-                this.players.splice(this.players.indexOf(socket), 1);
+                delete this.players[sessionID];
             }.bind(this));
         }
     }, {
-        key: "distributeActions",
-        value: function distributeActions(actions, player) {
-            // no player: distribute to every player
-            if (player === undefined) {
-                for (var i = 0; i < this.players.length; i++) {
-                    this.distributeActions(actions, this.players[i]);
+        key: "openGame",
+        value: function openGame(sessionID, game) {
+            this.players[sessionID].game = game;
+            var socket = this.players[sessionID].socket;
+            socket.emit('setup game', game);
+
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
+
+            try {
+                for (var _iterator3 = game.gameLog[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                    var action = _step3.value;
+
+                    socket.emit('game action', action);
                 }
+            } catch (err) {
+                _didIteratorError3 = true;
+                _iteratorError3 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                        _iterator3.return();
+                    }
+                } finally {
+                    if (_didIteratorError3) {
+                        throw _iteratorError3;
+                    }
+                }
+            }
+        }
+    }, {
+        key: "distributeActions",
+        value: function distributeActions(game, actions, sessionID) {
+            // no socket: distribute to every player in this game
+            if (sessionID === undefined) {
+                var _iteratorNormalCompletion4 = true;
+                var _didIteratorError4 = false;
+                var _iteratorError4 = undefined;
+
+                try {
+                    for (var _iterator4 = Object.keys(this.players)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                        var _sessionID = _step4.value;
+
+                        if (this.players[_sessionID].game === game) this.distributeActions(game, actions, _sessionID);
+                    }
+                } catch (err) {
+                    _didIteratorError4 = true;
+                    _iteratorError4 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                            _iterator4.return();
+                        }
+                    } finally {
+                        if (_didIteratorError4) {
+                            throw _iteratorError4;
+                        }
+                    }
+                }
+
                 return;
             }
 
             if (!Array.isArray(actions)) actions = [actions];
 
-            for (var _i = 0; _i < actions.length; _i++) {
-                player.emit('game action', actions[_i]);
+            var _iteratorNormalCompletion5 = true;
+            var _didIteratorError5 = false;
+            var _iteratorError5 = undefined;
+
+            try {
+                for (var _iterator5 = actions[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                    var action = _step5.value;
+
+                    this.players[sessionID].socket.emit('game action', action);
+                }
+            } catch (err) {
+                _didIteratorError5 = true;
+                _iteratorError5 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                        _iterator5.return();
+                    }
+                } finally {
+                    if (_didIteratorError5) {
+                        throw _iteratorError5;
+                    }
+                }
             }
         }
     }]);
@@ -638,7 +718,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Game = function () {
-    function Game(rules, name, player1, player2) {
+    function Game(rules, name, player1, player2, isServer) {
         _classCallCheck(this, Game);
 
         this.id = (0, _guid2.default)();
@@ -668,27 +748,30 @@ var Game = function () {
             }
         }
 
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+        // only do the moves on the server and then push them onto the client
+        if (isServer) {
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
 
-        try {
-            for (var _iterator = rules.setupMoves()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var logEntry = _step.value;
-
-                this.execute(logEntry);
-            }
-        } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-        } finally {
             try {
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                    _iterator.return();
+                for (var _iterator = rules.setupMoves()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var _logEntry = _step.value;
+
+                    this.execute(_logEntry);
                 }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
             } finally {
-                if (_didIteratorError) {
-                    throw _iteratorError;
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
                 }
             }
         }
@@ -785,6 +868,7 @@ var Game = function () {
                 var piece = new pieceClass(player);
                 var cell = this.getCell(logEntry);
                 cell.piece = piece;
+                this.gameLog.push(logEntry);
             }
         }
     }, {

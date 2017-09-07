@@ -9,9 +9,11 @@ class Client {
         this.login(username);
         this.setupCreateGame();
         this.socket = io();
+        this.socket.emit('login', this.username);
 
         this.socket.on('setup game', function (game) {
             this.gamemaster = new GameMaster(this.socket, this, game);
+            $('body').addClass('ingame');
         }.bind(this));
 
         this.socket.on('list games', function (data) {
@@ -51,10 +53,7 @@ class Client {
         }
         $(document).on('click', '.lobby .join', function(e) {
             let id = $(e.target).parents('.lobby').data('id');
-            this.socket.emit('join game', {
-                id: id,
-                username: this.username
-            });
+            this.socket.emit('join game', id);
         }.bind(this));
 
         // games
@@ -63,6 +62,7 @@ class Client {
             let html = template({
                 id: game.id,
                 name: game.name,
+                ruleset: RULE_SETS[game.rules.id].name,
                 player1: game.player1.name,
                 player2: game.player2.name,
                 created: timeSince(new Date(game.created))
@@ -75,13 +75,13 @@ class Client {
             }
         }
         $(document).on('click', '#games .game', function(e) {
-            let id = $(e.target).data('id');
+            let id = $(e.target).closest('.game').data('id');
             this.socket.emit('open game', id);
         }.bind(this));
     }
 
     setupCreateGame() {
-        $('#gamename').attr('default', this.defaultGameName());
+        $('#gamename').attr('placeholder', this.defaultGameName());
         $('#create-game').on('click', function() {
             $('#creator').slideToggle();
         });

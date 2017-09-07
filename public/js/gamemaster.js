@@ -29,6 +29,7 @@ export default class GameMaster {
             switch (data.action) {
                 case 'action':
                 case 'sym move':
+                case 'place piece':
                 case 'gameEnd':
                     this.hideNotification();
                     this.game.execute(data);
@@ -113,6 +114,12 @@ export default class GameMaster {
                 $('.message', this.html).addClass('lose');
                 this.showNotification('2nd Place', 'You lost this game');
             }
+        }
+
+        if (logEntry.action === 'place piece') {
+            let jqCell = this.getjqCell(logEntry);
+            let cell = this.getCell(jqCell);
+            jqCell.addClass(cell.piece.class);
         }
     }
 

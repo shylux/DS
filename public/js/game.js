@@ -4,7 +4,7 @@ import guid from './utils/guid'
 import {PIECE_REGISTRY} from "./game_types/pieceregistry";
 
 export default class Game {
-    constructor(rules, name, player1, player2) {
+    constructor(rules, name, player1, player2, isServer) {
         this.id = guid();
         this.name = name;
         this.rules = rules;
@@ -32,9 +32,11 @@ export default class Game {
             }
         }
 
-        for (let logEntry of rules.setupMoves()) {
-            this.execute(logEntry);
-        }
+        // only do the moves on the server and then push them onto the client
+        if (isServer)
+            for (let logEntry of rules.setupMoves()) {
+                this.execute(logEntry);
+            }
     }
 
     // generates a logEntry for a move
@@ -156,6 +158,7 @@ export default class Game {
             let piece = new pieceClass(player);
             let cell = this.getCell(logEntry);
             cell.piece = piece;
+            this.gameLog.push(logEntry);
         }
     }
 
