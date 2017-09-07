@@ -162,8 +162,8 @@ export default class Game {
         }
     }
 
-    getPossibleMoves(cell) {
-        return cell.piece.getPossibleMoves(this, cell.x, cell.y);
+    *getPossibleMoves(cell) {
+        yield* cell.piece.getPossibleMoves(this, cell.x, cell.y);
     }
 
     checkWinCondition() {

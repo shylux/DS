@@ -46,9 +46,8 @@ class Piece {
         throw "NotImplemented";
     }
 
-    getMovesInDirection(game, x, y, direction, maxDistance = false, behaviour = MOVING_BEHAVIORS.HITTING) {
+    *getMovesInDirection(game, x, y, direction, maxDistance = false, behaviour = MOVING_BEHAVIORS.HITTING) {
         let pos = {x: x, y: y};
-        let moves = [];
         let distance = 0;
 
         while (true) {
@@ -63,18 +62,17 @@ class Piece {
 
                 if (cell.piece) {
                     if (behaviour !== MOVING_BEHAVIORS.STOPPING && cell.piece.owner !== this.owner)
-                        moves.push({x: pos.x, y: pos.y});
+                        yield {x: pos.x, y: pos.y};
                     break;
                 }
 
-                moves.push({x: pos.x, y: pos.y});
+                yield {x: pos.x, y: pos.y};
             } catch(err) {
                 // break if OutsideOfBoard. else its an unexpected error
                 if (err !== "OutsideOfBoard") throw err;
                 break;
             }
         }
-        return moves;
     }
 
     getOwnerDirection() {
@@ -111,14 +109,13 @@ export class Pawn extends BlackWhiteChessPiece {
         return 'piece-pawn-' + super.class;
     }
 
-    getPossibleMoves(game, x, y) {
-        let moves = [];
+    *getPossibleMoves(game, x, y) {
 
         // a pawn can move two spaces if it hasn't moved yet
         let distance = (this.hasMoved ? 1 : 2);
 
         // move in front
-        Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, this.getOwnerDirection(), distance, MOVING_BEHAVIORS.STOPPING));
+        yield* this.getMovesInDirection(game, x, y, this.getOwnerDirection(), distance, MOVING_BEHAVIORS.STOPPING);
 
         // diagonal moves - only available if the move can kill an opposing piece
         let hittingMoves = [
@@ -126,16 +123,14 @@ export class Pawn extends BlackWhiteChessPiece {
             {x: -1, y: this.getOwnerDirection().y},
         ];
         for (let d = 0; d < hittingMoves.length; d++) {
-            let possibleHittingMove = this.getMovesInDirection(game, x, y, hittingMoves[d], 1);
-            if (possibleHittingMove.length === 0) continue;
-            let possibleMove = possibleHittingMove[0];
-            // check for opposing piece
-            if (game.getCell(possibleMove).piece) moves.push(possibleMove);
+            // move one field diagonal and check
+            for (let move of this.getMovesInDirection(game, x, y, hittingMoves[d], 1)) {
+                // check for opposing piece
+                if (game.getCell(move).piece) yield move;
+            }
         }
 
         // TODO: en passent - oder o eifach nid..
-
-        return moves;
     }
 }
 
@@ -144,14 +139,12 @@ export class God extends BlackWhiteChessPiece {
         super(owner, "God");
     }
 
-    getPossibleMoves(game, x, y) {
-        let moves = [];
+    *getPossibleMoves(game, x, y) {
         for (let y = 0; y < game.board.length; y++) {
             for (let x = 0; x < game.board[y].length; x++) {
-                moves.push({x: x, y: y});
+                yield {x: x, y: y};
             }
         }
-        return moves;
     }
 
     get class() {
@@ -168,14 +161,11 @@ export class Rook extends BlackWhiteChessPiece {
         return 'piece-rook-' + super.class;
     }
 
-    getPossibleMoves(game, x, y) {
-        let moves = [];
+    *getPossibleMoves(game, x, y) {
 
         for (let d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
-            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d]));
+            yield* this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d]);
         }
-
-        return moves;
     }
 }
 
@@ -188,7 +178,7 @@ export class Knight extends BlackWhiteChessPiece {
         return 'piece-knight-' + super.class;
     }
 
-    getPossibleMoves(game, x, y) {
+    *getPossibleMoves(game, x, y) {
         let relativeMoves = [
             {x: 2, y: 1},
             {x: 2, y: -1},
@@ -199,13 +189,10 @@ export class Knight extends BlackWhiteChessPiece {
             {x: 1, y: -2},
             {x: -1, y: -2},
         ];
-        let moves = [];
 
         for (let d = 0; d < relativeMoves.length; d++) {
-            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, relativeMoves[d], 1));
+            yield* this.getMovesInDirection(game, x, y, relativeMoves[d], 1);
         }
-
-        return moves;
     }
 }
 
@@ -218,14 +205,10 @@ export class Bishop extends BlackWhiteChessPiece {
         return 'piece-bishop-' + super.class;
     }
 
-    getPossibleMoves(game, x, y) {
-        let moves = [];
-
+    *getPossibleMoves(game, x, y) {
         for (let d = 0; d < DIAGONAL_DIRECTIONS.length; d++) {
-            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, DIAGONAL_DIRECTIONS[d]));
+            yield* this.getMovesInDirection(game, x, y, DIAGONAL_DIRECTIONS[d]);
         }
-
-        return moves;
     }
 }
 
@@ -238,14 +221,10 @@ export class Queen extends BlackWhiteChessPiece {
         return 'piece-queen-' + super.class;
     }
 
-    getPossibleMoves(game, x, y) {
-        let moves = [];
-
+    *getPossibleMoves(game, x, y) {
         for (let d = 0; d < ALL_DIRECTIONS.length; d++) {
-            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d]));
+            yield* this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d]);
         }
-
-        return moves;
     }
 }
 
@@ -258,13 +237,9 @@ export class King extends BlackWhiteChessPiece {
         return 'piece-king-' + super.class;
     }
 
-    getPossibleMoves(game, x, y) {
-        let moves = [];
-
+    *getPossibleMoves(game, x, y) {
         for (let d = 0; d < ALL_DIRECTIONS.length; d++) {
-            Array.prototype.push.apply(moves, this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d], 1));
+            yield* this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d], 1);
         }
-
-        return moves;
     }
 }

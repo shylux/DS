@@ -138,9 +138,7 @@ export default class GameMaster {
         this.getjqCell(cell).addClass('selected');
 
         $('.possibleMove', this.html).removeClass('possibleMove');
-        let possibleMoves = this.game.getPossibleMoves(cell);
-        for (let i = 0; i < possibleMoves.length; i++) {
-            let move = possibleMoves[i];
+        for (let move of this.game.getPossibleMoves(cell)) {
             let jqcell = this.getjqCell(move);
             jqcell.addClass('possibleMove');
         }
