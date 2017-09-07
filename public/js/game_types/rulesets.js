@@ -30,8 +30,29 @@ export let RULE_SETS = {
             yield Game.preparePlacePiece(4, 7, 1, "Queen");
             yield Game.preparePlacePiece(3, 0, 2, "King");
             yield Game.preparePlacePiece(3, 7, 1, "King");
-            yield Game.preparePlacePiece(0, 1, 2, "God");
-            yield Game.preparePlacePiece(7, 6, 1, "God");
+        }
+    },
+    'chess-attack': {
+        id: 'chess-attack',
+        name: 'Chess Attack',
+        loseConditions: [new KingDead()],
+        boardWidth: 5,
+        boardHeight: 6,
+        setupMoves: function* () {
+            for (let x = 0; x < 5; x++) {
+                yield Game.preparePlacePiece(x, 1, 2, "Pawn");
+                yield Game.preparePlacePiece(x, 4, 1, "Pawn");
+            }
+            yield Game.preparePlacePiece(0, 0, 2, "Rook");
+            yield Game.preparePlacePiece(0, 5, 1, "Rook");
+            yield Game.preparePlacePiece(1, 0, 2, "Knight");
+            yield Game.preparePlacePiece(1, 5, 1, "Knight");
+            yield Game.preparePlacePiece(2, 0, 2, "Bishop");
+            yield Game.preparePlacePiece(2, 5, 1, "Bishop");
+            yield Game.preparePlacePiece(3, 0, 2, "Queen");
+            yield Game.preparePlacePiece(3, 5, 1, "Queen");
+            yield Game.preparePlacePiece(4, 0, 2, "King");
+            yield Game.preparePlacePiece(4, 5, 1, "King");
         }
     }
 };

@@ -2605,16 +2605,88 @@ var RULE_SETS = exports.RULE_SETS = {
                             return _game2.default.preparePlacePiece(3, 7, 1, "King");
 
                         case 41:
-                            _context.next = 43;
-                            return _game2.default.preparePlacePiece(0, 1, 2, "God");
-
-                        case 43:
-                            _context.next = 45;
-                            return _game2.default.preparePlacePiece(7, 6, 1, "God");
-
-                        case 45:
                         case 'end':
                             return _context.stop();
+                    }
+                }
+            }, setupMoves, this);
+        })
+    },
+    'chess-attack': {
+        id: 'chess-attack',
+        name: 'Chess Attack',
+        loseConditions: [new _kingdead2.default()],
+        boardWidth: 5,
+        boardHeight: 6,
+        setupMoves: regeneratorRuntime.mark(function setupMoves() {
+            var x;
+            return regeneratorRuntime.wrap(function setupMoves$(_context2) {
+                while (1) {
+                    switch (_context2.prev = _context2.next) {
+                        case 0:
+                            x = 0;
+
+                        case 1:
+                            if (!(x < 5)) {
+                                _context2.next = 9;
+                                break;
+                            }
+
+                            _context2.next = 4;
+                            return _game2.default.preparePlacePiece(x, 1, 2, "Pawn");
+
+                        case 4:
+                            _context2.next = 6;
+                            return _game2.default.preparePlacePiece(x, 4, 1, "Pawn");
+
+                        case 6:
+                            x++;
+                            _context2.next = 1;
+                            break;
+
+                        case 9:
+                            _context2.next = 11;
+                            return _game2.default.preparePlacePiece(0, 0, 2, "Rook");
+
+                        case 11:
+                            _context2.next = 13;
+                            return _game2.default.preparePlacePiece(0, 5, 1, "Rook");
+
+                        case 13:
+                            _context2.next = 15;
+                            return _game2.default.preparePlacePiece(1, 0, 2, "Knight");
+
+                        case 15:
+                            _context2.next = 17;
+                            return _game2.default.preparePlacePiece(1, 5, 1, "Knight");
+
+                        case 17:
+                            _context2.next = 19;
+                            return _game2.default.preparePlacePiece(2, 0, 2, "Bishop");
+
+                        case 19:
+                            _context2.next = 21;
+                            return _game2.default.preparePlacePiece(2, 5, 1, "Bishop");
+
+                        case 21:
+                            _context2.next = 23;
+                            return _game2.default.preparePlacePiece(3, 0, 2, "Queen");
+
+                        case 23:
+                            _context2.next = 25;
+                            return _game2.default.preparePlacePiece(3, 5, 1, "Queen");
+
+                        case 25:
+                            _context2.next = 27;
+                            return _game2.default.preparePlacePiece(4, 0, 2, "King");
+
+                        case 27:
+                            _context2.next = 29;
+                            return _game2.default.preparePlacePiece(4, 5, 1, "King");
+
+                        case 29:
+                        case 'end':
+                            return _context2.stop();
                     }
                 }
             }, setupMoves, this);

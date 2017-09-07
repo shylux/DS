@@ -82,6 +82,19 @@ class Client {
 
     setupCreateGame() {
         $('#gamename').attr('placeholder', this.defaultGameName());
+
+        // fill chess variants
+        for (let id of Object.keys(RULE_SETS)) {
+            let ruleset = RULE_SETS[id];
+            let template = require("../templates/ruleset-select.hbs");
+            let html = template({
+                id: ruleset.id,
+                name: ruleset.name
+            });
+            $('#ruleset').append(html);
+        }
+        $('#ruleset input:first').prop('checked', true);
+
         $('#create-game').on('click', function() {
             $('#creator').slideToggle();
         });
