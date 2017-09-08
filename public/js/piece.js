@@ -148,7 +148,7 @@ export class Pawn extends BlackWhiteChessPiece {
                                 logEntry.source.x === x + hittingMove.x &&
                                 logEntry.source.y === y + -2 * this.getOwnerDirection(cell.piece.owner.number).y) {
 
-                                move.special = 'promote';
+                                move.special = 'en-passant';
                                 yield move;
                             }
                         }

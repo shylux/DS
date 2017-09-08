@@ -69,12 +69,12 @@ export default class GameServer {
             }
         }.bind(this));
 
-        socket.on('game action', function(data) {
-            console.log(data);
+        socket.on('game action', function(action) {
+            console.log(action);
             let game = this.players[sessionID].game;
 
             try {
-                let result = game.execute(data);
+                let result = game.execute(action);
 
                 if (result) {
                     this.distributeActions(game, result);

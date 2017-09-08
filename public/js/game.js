@@ -149,6 +149,14 @@ export default class Game {
                 targetCell.piece.hasMoved = true;
             }
 
+            // do special moves
+            for (let move in logEntry.moves) {
+                if (move.special === 'en-passant') {
+                    let targetCell = this.getCell(logEntry.target.x, logEntry.source.y);
+                    delete targetCell.piece;
+                }
+            }
+
             this.gameLog.push(logEntry);
         }
 

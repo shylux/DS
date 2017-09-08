@@ -58,11 +58,18 @@ export default class GameMaster {
 
     handleClick(cell) {
         // execute move
-        if (this.getjqCell(cell).hasClass('possibleMove')) {
+        let targetJQCell = this.getjqCell(cell);
+        if (targetJQCell.hasClass('possibleMove')) {
             let sourceJqCell = $('td.selected', this.html);
             let sourceCell = this.getCell(sourceJqCell);
 
             let logEntry = Game.prepareMove(sourceCell, cell);
+
+            if (targetJQCell.hasClass('en-passant')) {
+                logEntry.special = 'en-passant';
+                // should always be a pawn
+                logEntry.passantClass = this.game.getCell(cell.x, sourceCell.y).piece.class;
+            }
 
             this.deselectPiece();
 
@@ -73,7 +80,7 @@ export default class GameMaster {
 
         // show possible moves
         if (cell.piece && (cell.piece.owner === this.localPlayer || this.admin)) {
-            if (this.getjqCell(cell).hasClass('selected')) {
+            if (targetJQCell.hasClass('selected')) {
                 // a click on a selected piece deselects it
                 this.deselectPiece();
             } else {
@@ -100,6 +107,13 @@ export default class GameMaster {
                 if (move.capturedPieceClass)
                     targetJqCell.removeClass(move.capturedPieceClass);
                 targetJqCell.addClass(move.movedPieceClass);
+            }
+
+            // do special moves
+            for (let move of logEntry.moves) {
+                if (move.special === 'en-passant') {
+                    this.getjqCell({x: move.target.x, y: move.source.y}).removeClass(move.passantClass);
+                }
             }
         }
 
@@ -142,11 +156,15 @@ export default class GameMaster {
         for (let move of this.game.getPossibleMoves(cell)) {
             let jqcell = this.getjqCell(move);
             jqcell.addClass('possibleMove');
+            if (move.special)
+                jqcell.addClass(move.special);
         }
     }
     deselectPiece() {
         $('.selected', this.html).removeClass('selected');
-        $('.possibleMove', this.html).removeClass('possibleMove');
+        $('.possibleMove', this.html)
+            .removeClass('possibleMove')
+            .removeClass('en-passant');
     }
 
     showNotification(title, content) {

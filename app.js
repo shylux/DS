@@ -468,6 +468,14 @@ var Game = function () {
                     targetCell.piece.hasMoved = true;
                 }
 
+                // do special moves
+                for (var move in logEntry.moves) {
+                    if (move.special === 'en-passant') {
+                        var _targetCell = this.getCell(logEntry.target.x, logEntry.source.y);
+                        delete _targetCell.piece;
+                    }
+                }
+
                 this.gameLog.push(logEntry);
             }
 
@@ -1015,7 +1023,7 @@ var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
                                 break;
                             }
 
-                            move.special = 'promote';
+                            move.special = 'en-passant';
                             _context2.next = 34;
                             return move;
 
@@ -1658,12 +1666,12 @@ var GameServer = function () {
                 }
             }.bind(this));
 
-            socket.on('game action', function (data) {
-                console.log(data);
+            socket.on('game action', function (action) {
+                console.log(action);
                 var game = this.players[sessionID].game;
 
                 try {
-                    var result = game.execute(data);
+                    var result = game.execute(action);
 
                     if (result) {
                         this.distributeActions(game, result);

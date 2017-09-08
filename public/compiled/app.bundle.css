@@ -9,9 +9,9 @@
       padding: 0; }
       .board table td.selected {
         box-shadow: 0 0 5px inset; }
-      .board table td.possibleMove {
+      .board table td[class*=possibleMove] {
         box-shadow: inset 0 0 3px 8px black; }
-        .board table td.possibleMove[class^=piece-] {
+        .board table td[class*=possibleMove][class^=piece-] {
           box-shadow: inset 0 0 3px 8px red; }
       .board table td.tile-black {
         background-color: dimgray; }
