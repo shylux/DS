@@ -374,13 +374,36 @@ var Game = function () {
         // checks if a move is valid
         value: function checkMove(logEntry) {
             // check if the player already made his move
-            for (var i = 0; i < this.currentMoveCache.length; i++) {
-                if (this.currentMoveCache[i].playerNumber === logEntry.playerNumber) throw 'OutOfSyncError: Player already made his move';
-            }var sourceCell = this.getCell(logEntry.source);
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = this.currentMoveCache[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var move = _step2.value;
+
+                    if (move.playerNumber === logEntry.playerNumber) throw 'OutOfSyncError: Player already made his move';
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                        _iterator2.return();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+
+            var sourceCell = this.getCell(logEntry.source);
             var targetCell = this.getCell(logEntry.target);
             if (!sourceCell.piece) throw 'NoPieceToMove';
             if (sourceCell.piece.class !== logEntry.movedPieceClass) throw 'OutOfSyncError: wrong source piece class';
-            if (logEntry.killedPieceClass && logEntry.killedPieceClass !== targetCell.piece.class) throw 'OutOfSyncError: wrong killed piece class';
+            if (logEntry.capturedPieceClass && logEntry.capturedPieceClass !== targetCell.piece.class) throw 'OutOfSyncError: wrong captured piece class';
         }
     }, {
         key: 'execute',
@@ -479,27 +502,27 @@ var Game = function () {
             var playersStillAlive = new Set([this.player1, this.player2]);
             for (var i = 0; i < this.rules.loseConditions.length; i++) {
                 var losers = this.rules.loseConditions[i].checkCondition(this);
-                var _iteratorNormalCompletion2 = true;
-                var _didIteratorError2 = false;
-                var _iteratorError2 = undefined;
+                var _iteratorNormalCompletion3 = true;
+                var _didIteratorError3 = false;
+                var _iteratorError3 = undefined;
 
                 try {
-                    for (var _iterator2 = losers.values()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                        var loser = _step2.value;
+                    for (var _iterator3 = losers.values()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                        var loser = _step3.value;
 
                         playersStillAlive.delete(loser);
                     }
                 } catch (err) {
-                    _didIteratorError2 = true;
-                    _iteratorError2 = err;
+                    _didIteratorError3 = true;
+                    _iteratorError3 = err;
                 } finally {
                     try {
-                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                            _iterator2.return();
+                        if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                            _iterator3.return();
                         }
                     } finally {
-                        if (_didIteratorError2) {
-                            throw _iteratorError2;
+                        if (_didIteratorError3) {
+                            throw _iteratorError3;
                         }
                     }
                 }
@@ -565,7 +588,7 @@ var Game = function () {
                 destroyed: false // this is set when two pieces collide
             };
 
-            if (targetCell.piece) logEntry.killedPieceClass = targetCell.piece.class;
+            if (targetCell.piece) logEntry.capturedPieceClass = targetCell.piece.class;
 
             return logEntry;
         }
@@ -837,9 +860,18 @@ var Piece = function () {
             }, getMovesInDirection, this, [[8, 21]]);
         })
     }, {
+        key: "getPassableCell",
+        value: function getPassableCell(game, x, y) {
+            var cell = game.getCell(x, y);
+            if (!cell.tile.passable) throw "CellNotPassable";
+            return cell;
+        }
+    }, {
         key: "getOwnerDirection",
-        value: function getOwnerDirection() {
-            switch (this.owner.number) {
+        value: function getOwnerDirection(playerNumber) {
+            if (!playerNumber) playerNumber = this.owner.number;
+
+            switch (playerNumber) {
                 case 1:
                     return { x: 0, y: -1 };
                 case 2:
@@ -899,7 +931,7 @@ var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
     _createClass(Pawn, [{
         key: "getPossibleMoves",
         value: regeneratorRuntime.mark(function getPossibleMoves(game, x, y) {
-            var distance, hittingMoves, d, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, move;
+            var distance, hittingMoves, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, hittingMove, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, move, cell, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, logEntry;
 
             return regeneratorRuntime.wrap(function getPossibleMoves$(_context2) {
                 while (1) {
@@ -917,88 +949,215 @@ var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
 
                             // diagonal moves - only available if the move can kill an opposing piece
                             hittingMoves = [{ x: 1, y: this.getOwnerDirection().y }, { x: -1, y: this.getOwnerDirection().y }];
-                            d = 0;
-
-                        case 4:
-                            if (!(d < hittingMoves.length)) {
-                                _context2.next = 35;
-                                break;
-                            }
-
-                            // move one field diagonal and check
                             _iteratorNormalCompletion = true;
                             _didIteratorError = false;
                             _iteratorError = undefined;
-                            _context2.prev = 8;
-                            _iterator = this.getMovesInDirection(game, x, y, hittingMoves[d], 1)[Symbol.iterator]();
+                            _context2.prev = 6;
+                            _iterator = hittingMoves[Symbol.iterator]();
 
-                        case 10:
+                        case 8:
                             if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                                _context2.next = 18;
+                                _context2.next = 75;
                                 break;
                             }
 
-                            move = _step.value;
+                            hittingMove = _step.value;
 
-                            if (!game.getCell(move).piece) {
-                                _context2.next = 15;
-                                break;
-                            }
-
-                            _context2.next = 15;
-                            return move;
+                            // move one field diagonal and check
+                            _iteratorNormalCompletion2 = true;
+                            _didIteratorError2 = false;
+                            _iteratorError2 = undefined;
+                            _context2.prev = 13;
+                            _iterator2 = this.getMovesInDirection(game, x, y, hittingMove, 1)[Symbol.iterator]();
 
                         case 15:
-                            _iteratorNormalCompletion = true;
-                            _context2.next = 10;
-                            break;
+                            if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                                _context2.next = 58;
+                                break;
+                            }
 
-                        case 18:
-                            _context2.next = 24;
-                            break;
+                            move = _step2.value;
+
+                            if (!game.getCell(move).piece) {
+                                _context2.next = 20;
+                                break;
+                            }
+
+                            _context2.next = 20;
+                            return move;
 
                         case 20:
                             _context2.prev = 20;
-                            _context2.t1 = _context2["catch"](8);
-                            _didIteratorError = true;
-                            _iteratorError = _context2.t1;
+                            cell = this.getPassableCell(game, x + hittingMove.x, y);
 
-                        case 24:
-                            _context2.prev = 24;
-                            _context2.prev = 25;
+                            if (!(cell.piece && cell.piece.name === "Pawn" && cell.piece.owner !== this.owner)) {
+                                _context2.next = 51;
+                                break;
+                            }
+
+                            // check game history
+                            _iteratorNormalCompletion3 = true;
+                            _didIteratorError3 = false;
+                            _iteratorError3 = undefined;
+                            _context2.prev = 26;
+                            _iterator3 = this.lastTurnActions(game)[Symbol.iterator]();
+
+                        case 28:
+                            if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                                _context2.next = 37;
+                                break;
+                            }
+
+                            logEntry = _step3.value;
+
+                            if (!(logEntry.target.x === x + hittingMove.x && logEntry.target.y === y && logEntry.source.x === x + hittingMove.x && logEntry.source.y === y + -2 * this.getOwnerDirection(cell.piece.owner.number).y)) {
+                                _context2.next = 34;
+                                break;
+                            }
+
+                            move.special = 'promote';
+                            _context2.next = 34;
+                            return move;
+
+                        case 34:
+                            _iteratorNormalCompletion3 = true;
+                            _context2.next = 28;
+                            break;
+
+                        case 37:
+                            _context2.next = 43;
+                            break;
+
+                        case 39:
+                            _context2.prev = 39;
+                            _context2.t1 = _context2["catch"](26);
+                            _didIteratorError3 = true;
+                            _iteratorError3 = _context2.t1;
+
+                        case 43:
+                            _context2.prev = 43;
+                            _context2.prev = 44;
+
+                            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                                _iterator3.return();
+                            }
+
+                        case 46:
+                            _context2.prev = 46;
+
+                            if (!_didIteratorError3) {
+                                _context2.next = 49;
+                                break;
+                            }
+
+                            throw _iteratorError3;
+
+                        case 49:
+                            return _context2.finish(46);
+
+                        case 50:
+                            return _context2.finish(43);
+
+                        case 51:
+                            _context2.next = 55;
+                            break;
+
+                        case 53:
+                            _context2.prev = 53;
+                            _context2.t2 = _context2["catch"](20);
+
+                        case 55:
+                            _iteratorNormalCompletion2 = true;
+                            _context2.next = 15;
+                            break;
+
+                        case 58:
+                            _context2.next = 64;
+                            break;
+
+                        case 60:
+                            _context2.prev = 60;
+                            _context2.t3 = _context2["catch"](13);
+                            _didIteratorError2 = true;
+                            _iteratorError2 = _context2.t3;
+
+                        case 64:
+                            _context2.prev = 64;
+                            _context2.prev = 65;
+
+                            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                                _iterator2.return();
+                            }
+
+                        case 67:
+                            _context2.prev = 67;
+
+                            if (!_didIteratorError2) {
+                                _context2.next = 70;
+                                break;
+                            }
+
+                            throw _iteratorError2;
+
+                        case 70:
+                            return _context2.finish(67);
+
+                        case 71:
+                            return _context2.finish(64);
+
+                        case 72:
+                            _iteratorNormalCompletion = true;
+                            _context2.next = 8;
+                            break;
+
+                        case 75:
+                            _context2.next = 81;
+                            break;
+
+                        case 77:
+                            _context2.prev = 77;
+                            _context2.t4 = _context2["catch"](6);
+                            _didIteratorError = true;
+                            _iteratorError = _context2.t4;
+
+                        case 81:
+                            _context2.prev = 81;
+                            _context2.prev = 82;
 
                             if (!_iteratorNormalCompletion && _iterator.return) {
                                 _iterator.return();
                             }
 
-                        case 27:
-                            _context2.prev = 27;
+                        case 84:
+                            _context2.prev = 84;
 
                             if (!_didIteratorError) {
-                                _context2.next = 30;
+                                _context2.next = 87;
                                 break;
                             }
 
                             throw _iteratorError;
 
-                        case 30:
-                            return _context2.finish(27);
+                        case 87:
+                            return _context2.finish(84);
 
-                        case 31:
-                            return _context2.finish(24);
+                        case 88:
+                            return _context2.finish(81);
 
-                        case 32:
-                            d++;
-                            _context2.next = 4;
-                            break;
-
-                        case 35:
+                        case 89:
                         case "end":
                             return _context2.stop();
                     }
                 }
-            }, getPossibleMoves, this, [[8, 20, 24, 32], [25,, 27, 31]]);
+            }, getPossibleMoves, this, [[6, 77, 81, 89], [13, 60, 64, 72], [20, 53], [26, 39, 43, 51], [44,, 46, 50], [65,, 67, 71], [82,, 84, 88]]);
         })
+    }, {
+        key: "lastTurnActions",
+        value: function lastTurnActions(game) {
+            var logEntry = game.gameLog[game.gameLog.length - 1];
+            if (logEntry.action === "sym move") return logEntry.moves;
+            if (logEntry.action === "move") return [logEntry];
+        }
     }, {
         key: "class",
         get: function get() {

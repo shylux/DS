@@ -75,8 +75,17 @@ class Piece {
         }
     }
 
-    getOwnerDirection() {
-        switch(this.owner.number) {
+    getPassableCell(game, x, y) {
+        let cell = game.getCell(x, y);
+        if (!cell.tile.passable) throw "CellNotPassable";
+        return cell;
+    }
+
+    getOwnerDirection(playerNumber) {
+        if (!playerNumber)
+            playerNumber = this.owner.number;
+
+        switch(playerNumber) {
             case 1:
                 return {x: 0, y: -1};
             case 2:
@@ -122,15 +131,39 @@ export class Pawn extends BlackWhiteChessPiece {
             {x: 1, y: this.getOwnerDirection().y},
             {x: -1, y: this.getOwnerDirection().y},
         ];
-        for (let d = 0; d < hittingMoves.length; d++) {
+        for (let hittingMove of hittingMoves) {
             // move one field diagonal and check
-            for (let move of this.getMovesInDirection(game, x, y, hittingMoves[d], 1)) {
+            for (let move of this.getMovesInDirection(game, x, y, hittingMove, 1)) {
                 // check for opposing piece
                 if (game.getCell(move).piece) yield move;
+
+                // check en passant
+                try {
+                    let cell = this.getPassableCell(game, x + hittingMove.x, y);
+                    if (cell.piece && cell.piece.name === "Pawn" && cell.piece.owner !== this.owner) {
+                        // check game history
+                        for (let logEntry of this.lastTurnActions(game)) {
+                            if (logEntry.target.x === x + hittingMove.x &&
+                                logEntry.target.y === y &&
+                                logEntry.source.x === x + hittingMove.x &&
+                                logEntry.source.y === y + -2 * this.getOwnerDirection(cell.piece.owner.number).y) {
+
+                                move.special = 'promote';
+                                yield move;
+                            }
+                        }
+                    }
+                } catch (err) {}
             }
         }
+    }
 
-        // TODO: en passent - oder o eifach nid..
+    lastTurnActions(game) {
+        let logEntry = game.gameLog[game.gameLog.length - 1];
+        if (logEntry.action === "sym move")
+            return logEntry.moves;
+        if (logEntry.action === "move")
+            return [logEntry];
     }
 }
 
@@ -162,7 +195,6 @@ export class Rook extends BlackWhiteChessPiece {
     }
 
     *getPossibleMoves(game, x, y) {
-
         for (let d = 0; d < STRAIGHT_DIRECTIONS.length; d++) {
             yield* this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d]);
         }

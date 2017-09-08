@@ -17,6 +17,7 @@ export default class GameMaster {
 
         this.game = new Game(RULE_SETS[game.rules.id], game.name, player1, player2);
         this.render();
+        this.html.css('width', this.game.width*64+"px");
 
         $('#board-wrapper').append(this.html);
         $('td', this.html).on('click', function(event) {
@@ -85,20 +86,20 @@ export default class GameMaster {
     executeAction(logEntry) {
         if (logEntry.action === 'sym move') {
             // pick up pieces
-            for (let i = 0; i < logEntry.moves.length; i++) {
-                let sourceJqCell = this.getjqCell(logEntry.moves[i].source);
-                sourceJqCell.removeClass(logEntry.moves[i].movedPieceClass);
+            for (let move of logEntry.moves) {
+                let sourceJqCell = this.getjqCell(move.source);
+                sourceJqCell.removeClass(move.movedPieceClass);
             }
 
             // put pieces down
-            for (let i = 0; i < logEntry.moves.length; i++) {
-                if (logEntry.moves[i].destroyed)
+            for (let move of logEntry.moves) {
+                if (move.destroyed)
                     continue;
 
-                let targetJqCell = this.getjqCell(logEntry.moves[i].target);
-                if (logEntry.moves[i].killedPieceClass)
-                    targetJqCell.removeClass(logEntry.moves[i].killedPieceClass);
-                targetJqCell.addClass(logEntry.moves[i].movedPieceClass);
+                let targetJqCell = this.getjqCell(move.target);
+                if (move.capturedPieceClass)
+                    targetJqCell.removeClass(move.capturedPieceClass);
+                targetJqCell.addClass(move.movedPieceClass);
             }
         }
 

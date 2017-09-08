@@ -54,7 +54,7 @@ export default class Game {
         };
 
         if (targetCell.piece)
-            logEntry.killedPieceClass = targetCell.piece.class;
+            logEntry.capturedPieceClass = targetCell.piece.class;
 
         return logEntry;
     }
@@ -73,16 +73,16 @@ export default class Game {
     // checks if a move is valid
     checkMove(logEntry) {
         // check if the player already made his move
-        for (let i = 0; i < this.currentMoveCache.length; i++)
-            if (this.currentMoveCache[i].playerNumber === logEntry.playerNumber)
+        for (let move of this.currentMoveCache)
+            if (move.playerNumber === logEntry.playerNumber)
                 throw 'OutOfSyncError: Player already made his move';
 
         let sourceCell = this.getCell(logEntry.source);
         let targetCell = this.getCell(logEntry.target);
         if (!sourceCell.piece) throw 'NoPieceToMove';
         if (sourceCell.piece.class !== logEntry.movedPieceClass) throw 'OutOfSyncError: wrong source piece class';
-        if (logEntry.killedPieceClass &&
-            logEntry.killedPieceClass !== targetCell.piece.class) throw 'OutOfSyncError: wrong killed piece class';
+        if (logEntry.capturedPieceClass &&
+            logEntry.capturedPieceClass !== targetCell.piece.class) throw 'OutOfSyncError: wrong captured piece class';
     }
 
     execute(logEntry) {
