@@ -38,6 +38,8 @@ class Client {
     }
 
     listGames(data) {
+        $('#mygames, #lobbys, #spectategames').empty();
+
         // lobbys
         for (let lobby of data.lobbys) {
             let template = require("../templates/lobby.hbs");
@@ -115,6 +117,7 @@ class Client {
            name: name,
            ruleset: $('input[name=ruleset]:checked').val()
         });
+        $('#creator').slideToggle();
     }
 }
 

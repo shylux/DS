@@ -1700,7 +1700,7 @@ var GameServer = function () {
                 data.id = (0, _guid2.default)();
                 data.created = new Date();
                 this.lobbys.push(data);
-                socket.emit('reload');
+                this.refreshMenus();
             }.bind(this));
 
             socket.on('join game', function (id) {
@@ -1718,6 +1718,7 @@ var GameServer = function () {
                             this.games.push(game);
 
                             this.openGame(sessionID, game);
+                            this.refreshMenus();
                             break;
                         }
                     }
@@ -1821,31 +1822,65 @@ var GameServer = function () {
             }
         }
     }, {
+        key: "refreshMenus",
+        value: function refreshMenus() {
+            // refreshes the menus of all connected players (who are in the menu)
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
+
+            try {
+                for (var _iterator4 = Object.keys(this.players)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var sessionID = _step4.value;
+
+                    if (!this.players[sessionID].game) {
+                        this.players[sessionID].socket.emit('list games', {
+                            games: this.games,
+                            lobbys: this.lobbys
+                        });
+                    }
+                }
+            } catch (err) {
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                        _iterator4.return();
+                    }
+                } finally {
+                    if (_didIteratorError4) {
+                        throw _iteratorError4;
+                    }
+                }
+            }
+        }
+    }, {
         key: "distributeActions",
         value: function distributeActions(game, actions, sessionID) {
             // no socket: distribute to every player in this game
             if (sessionID === undefined) {
-                var _iteratorNormalCompletion4 = true;
-                var _didIteratorError4 = false;
-                var _iteratorError4 = undefined;
+                var _iteratorNormalCompletion5 = true;
+                var _didIteratorError5 = false;
+                var _iteratorError5 = undefined;
 
                 try {
-                    for (var _iterator4 = Object.keys(this.players)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                        var _sessionID = _step4.value;
+                    for (var _iterator5 = Object.keys(this.players)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                        var _sessionID = _step5.value;
 
                         if (this.players[_sessionID].game === game) this.distributeActions(game, actions, _sessionID);
                     }
                 } catch (err) {
-                    _didIteratorError4 = true;
-                    _iteratorError4 = err;
+                    _didIteratorError5 = true;
+                    _iteratorError5 = err;
                 } finally {
                     try {
-                        if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                            _iterator4.return();
+                        if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                            _iterator5.return();
                         }
                     } finally {
-                        if (_didIteratorError4) {
-                            throw _iteratorError4;
+                        if (_didIteratorError5) {
+                            throw _iteratorError5;
                         }
                     }
                 }
@@ -1855,27 +1890,27 @@ var GameServer = function () {
 
             if (!Array.isArray(actions)) actions = [actions];
 
-            var _iteratorNormalCompletion5 = true;
-            var _didIteratorError5 = false;
-            var _iteratorError5 = undefined;
+            var _iteratorNormalCompletion6 = true;
+            var _didIteratorError6 = false;
+            var _iteratorError6 = undefined;
 
             try {
-                for (var _iterator5 = actions[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                    var action = _step5.value;
+                for (var _iterator6 = actions[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                    var action = _step6.value;
 
                     this.players[sessionID].socket.emit('game action', action);
                 }
             } catch (err) {
-                _didIteratorError5 = true;
-                _iteratorError5 = err;
+                _didIteratorError6 = true;
+                _iteratorError6 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                        _iterator5.return();
+                    if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                        _iterator6.return();
                     }
                 } finally {
-                    if (_didIteratorError5) {
-                        throw _iteratorError5;
+                    if (_didIteratorError6) {
+                        throw _iteratorError6;
                     }
                 }
             }

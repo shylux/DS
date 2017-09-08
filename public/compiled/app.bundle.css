@@ -75,7 +75,10 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5); }
     .board .overlay .message {
-      width: 300px;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 300px;
       margin: 20% auto 0 auto;
       padding: 10px 20px 10px 10px;
       box-shadow: 0 0 5px black;

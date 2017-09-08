@@ -39,7 +39,7 @@ export default class GameServer {
             data.id = guid();
             data.created = new Date();
             this.lobbys.push(data);
-            socket.emit('reload');
+            this.refreshMenus();
         }.bind(this));
 
         socket.on('join game', function(id) {
@@ -55,6 +55,7 @@ export default class GameServer {
                     this.games.push(game);
 
                     this.openGame(sessionID, game);
+                    this.refreshMenus();
                     break;
                 }
             }
@@ -99,6 +100,18 @@ export default class GameServer {
 
         for (let action of game.gameLog) {
             socket.emit('game action', action);
+        }
+    }
+
+    refreshMenus() {
+        // refreshes the menus of all connected players (who are in the menu)
+        for (let sessionID of Object.keys(this.players)) {
+            if (!this.players[sessionID].game) {
+                this.players[sessionID].socket.emit('list games', {
+                    games: this.games,
+                    lobbys: this.lobbys
+                });
+            }
         }
     }
 
