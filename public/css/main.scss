@@ -41,6 +41,7 @@ input {
 }
 input[type=submit] {
   background-color: dimgray;
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
 }
 
@@ -158,6 +159,8 @@ header {
     #create-game {
       background-color: #d4edda;
       margin-left: 20px;
+      color: #155724;
+      font-weight: 600;
     }
   }
 
