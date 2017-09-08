@@ -150,10 +150,16 @@ export default class Game {
             }
 
             // do special moves
-            for (let move in logEntry.moves) {
+            for (let move of logEntry.moves) {
                 if (move.special === 'en-passant') {
-                    let targetCell = this.getCell(logEntry.target.x, logEntry.source.y);
+                    let targetCell = this.getCell(move.target.x, move.source.y);
                     delete targetCell.piece;
+                }
+                if (move.special === 'promote') {
+                    let targetCellFU = this.getCell(move.target.x, move.target.y);
+                    let pieceClass = PIECE_REGISTRY[move.promotionPieceName];
+                    let piece = new pieceClass(targetCellFU.piece.owner);
+                    targetCellFU.piece = piece;
                 }
             }
 

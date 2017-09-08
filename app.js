@@ -469,10 +469,37 @@ var Game = function () {
                 }
 
                 // do special moves
-                for (var move in logEntry.moves) {
-                    if (move.special === 'en-passant') {
-                        var _targetCell = this.getCell(logEntry.target.x, logEntry.source.y);
-                        delete _targetCell.piece;
+                var _iteratorNormalCompletion3 = true;
+                var _didIteratorError3 = false;
+                var _iteratorError3 = undefined;
+
+                try {
+                    for (var _iterator3 = logEntry.moves[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                        var move = _step3.value;
+
+                        if (move.special === 'en-passant') {
+                            var _targetCell = this.getCell(move.target.x, move.source.y);
+                            delete _targetCell.piece;
+                        }
+                        if (move.special === 'promote') {
+                            var targetCellFU = this.getCell(move.target.x, move.target.y);
+                            var pieceClass = _pieceregistry.PIECE_REGISTRY[move.promotionPieceName];
+                            var piece = new pieceClass(targetCellFU.piece.owner);
+                            targetCellFU.piece = piece;
+                        }
+                    }
+                } catch (err) {
+                    _didIteratorError3 = true;
+                    _iteratorError3 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                            _iterator3.return();
+                        }
+                    } finally {
+                        if (_didIteratorError3) {
+                            throw _iteratorError3;
+                        }
                     }
                 }
 
@@ -480,11 +507,11 @@ var Game = function () {
             }
 
             if (logEntry.action === 'place piece') {
-                var pieceClass = _pieceregistry.PIECE_REGISTRY[logEntry.pieceName];
+                var _pieceClass = _pieceregistry.PIECE_REGISTRY[logEntry.pieceName];
                 var player = this.getPlayer(logEntry.playerNumber);
-                var piece = new pieceClass(player);
+                var _piece = new _pieceClass(player);
                 var cell = this.getCell(logEntry);
-                cell.piece = piece;
+                cell.piece = _piece;
                 this.gameLog.push(logEntry);
             }
         }
@@ -510,27 +537,27 @@ var Game = function () {
             var playersStillAlive = new Set([this.player1, this.player2]);
             for (var i = 0; i < this.rules.loseConditions.length; i++) {
                 var losers = this.rules.loseConditions[i].checkCondition(this);
-                var _iteratorNormalCompletion3 = true;
-                var _didIteratorError3 = false;
-                var _iteratorError3 = undefined;
+                var _iteratorNormalCompletion4 = true;
+                var _didIteratorError4 = false;
+                var _iteratorError4 = undefined;
 
                 try {
-                    for (var _iterator3 = losers.values()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                        var loser = _step3.value;
+                    for (var _iterator4 = losers.values()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                        var loser = _step4.value;
 
                         playersStillAlive.delete(loser);
                     }
                 } catch (err) {
-                    _didIteratorError3 = true;
-                    _iteratorError3 = err;
+                    _didIteratorError4 = true;
+                    _iteratorError4 = err;
                 } finally {
                     try {
-                        if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                            _iterator3.return();
+                        if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                            _iterator4.return();
                         }
                     } finally {
-                        if (_didIteratorError3) {
-                            throw _iteratorError3;
+                        if (_didIteratorError4) {
+                            throw _iteratorError4;
                         }
                     }
                 }
@@ -745,6 +772,8 @@ var _get = function get(object, property, receiver) { if (object === null) objec
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
@@ -778,7 +807,7 @@ var Piece = function () {
     }, {
         key: "getMovesInDirection",
         value: regeneratorRuntime.mark(function getMovesInDirection(game, x, y, direction) {
-            var maxDistance = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+            var maxDistance = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 9999;
             var behaviour = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : MOVING_BEHAVIORS.HITTING;
             var pos, distance, cell;
             return regeneratorRuntime.wrap(function getMovesInDirection$(_context) {
@@ -938,226 +967,298 @@ var Pawn = exports.Pawn = function (_BlackWhiteChessPiece) {
 
     _createClass(Pawn, [{
         key: "getPossibleMoves",
+
+
+        // this marks the promotion moves
         value: regeneratorRuntime.mark(function getPossibleMoves(game, x, y) {
-            var distance, hittingMoves, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, hittingMove, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, move, cell, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, logEntry;
+            var possibleMoves, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, move;
 
             return regeneratorRuntime.wrap(function getPossibleMoves$(_context2) {
                 while (1) {
                     switch (_context2.prev = _context2.next) {
                         case 0:
-
-                            // a pawn can move two spaces if it hasn't moved yet
-                            distance = this.hasMoved ? 1 : 2;
-
-                            // move in front
-
-                            return _context2.delegateYield(this.getMovesInDirection(game, x, y, this.getOwnerDirection(), distance, MOVING_BEHAVIORS.STOPPING), "t0", 2);
-
-                        case 2:
-
-                            // diagonal moves - only available if the move can kill an opposing piece
-                            hittingMoves = [{ x: 1, y: this.getOwnerDirection().y }, { x: -1, y: this.getOwnerDirection().y }];
+                            possibleMoves = [].concat(_toConsumableArray(this.getPossibleMovesWithoutPromotion(game, x, y)));
                             _iteratorNormalCompletion = true;
                             _didIteratorError = false;
                             _iteratorError = undefined;
-                            _context2.prev = 6;
-                            _iterator = hittingMoves[Symbol.iterator]();
+                            _context2.prev = 4;
+
+                            for (_iterator = possibleMoves[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                                move = _step.value;
+
+                                try {
+                                    game.getCell(move.x, move.y + this.getOwnerDirection().y);
+                                } catch (err) {
+                                    // mark as promotion if next step would be outside the board
+                                    if (err === "OutsideOfBoard") {
+                                        move.special = 'promote';
+                                    }
+                                }
+                            }
+                            _context2.next = 12;
+                            break;
 
                         case 8:
-                            if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                                _context2.next = 75;
-                                break;
-                            }
-
-                            hittingMove = _step.value;
-
-                            // move one field diagonal and check
-                            _iteratorNormalCompletion2 = true;
-                            _didIteratorError2 = false;
-                            _iteratorError2 = undefined;
-                            _context2.prev = 13;
-                            _iterator2 = this.getMovesInDirection(game, x, y, hittingMove, 1)[Symbol.iterator]();
-
-                        case 15:
-                            if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                                _context2.next = 58;
-                                break;
-                            }
-
-                            move = _step2.value;
-
-                            if (!game.getCell(move).piece) {
-                                _context2.next = 20;
-                                break;
-                            }
-
-                            _context2.next = 20;
-                            return move;
-
-                        case 20:
-                            _context2.prev = 20;
-                            cell = this.getPassableCell(game, x + hittingMove.x, y);
-
-                            if (!(cell.piece && cell.piece.name === "Pawn" && cell.piece.owner !== this.owner)) {
-                                _context2.next = 51;
-                                break;
-                            }
-
-                            // check game history
-                            _iteratorNormalCompletion3 = true;
-                            _didIteratorError3 = false;
-                            _iteratorError3 = undefined;
-                            _context2.prev = 26;
-                            _iterator3 = this.lastTurnActions(game)[Symbol.iterator]();
-
-                        case 28:
-                            if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                                _context2.next = 37;
-                                break;
-                            }
-
-                            logEntry = _step3.value;
-
-                            if (!(logEntry.target.x === x + hittingMove.x && logEntry.target.y === y && logEntry.source.x === x + hittingMove.x && logEntry.source.y === y + -2 * this.getOwnerDirection(cell.piece.owner.number).y)) {
-                                _context2.next = 34;
-                                break;
-                            }
-
-                            move.special = 'en-passant';
-                            _context2.next = 34;
-                            return move;
-
-                        case 34:
-                            _iteratorNormalCompletion3 = true;
-                            _context2.next = 28;
-                            break;
-
-                        case 37:
-                            _context2.next = 43;
-                            break;
-
-                        case 39:
-                            _context2.prev = 39;
-                            _context2.t1 = _context2["catch"](26);
-                            _didIteratorError3 = true;
-                            _iteratorError3 = _context2.t1;
-
-                        case 43:
-                            _context2.prev = 43;
-                            _context2.prev = 44;
-
-                            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                                _iterator3.return();
-                            }
-
-                        case 46:
-                            _context2.prev = 46;
-
-                            if (!_didIteratorError3) {
-                                _context2.next = 49;
-                                break;
-                            }
-
-                            throw _iteratorError3;
-
-                        case 49:
-                            return _context2.finish(46);
-
-                        case 50:
-                            return _context2.finish(43);
-
-                        case 51:
-                            _context2.next = 55;
-                            break;
-
-                        case 53:
-                            _context2.prev = 53;
-                            _context2.t2 = _context2["catch"](20);
-
-                        case 55:
-                            _iteratorNormalCompletion2 = true;
-                            _context2.next = 15;
-                            break;
-
-                        case 58:
-                            _context2.next = 64;
-                            break;
-
-                        case 60:
-                            _context2.prev = 60;
-                            _context2.t3 = _context2["catch"](13);
-                            _didIteratorError2 = true;
-                            _iteratorError2 = _context2.t3;
-
-                        case 64:
-                            _context2.prev = 64;
-                            _context2.prev = 65;
-
-                            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                                _iterator2.return();
-                            }
-
-                        case 67:
-                            _context2.prev = 67;
-
-                            if (!_didIteratorError2) {
-                                _context2.next = 70;
-                                break;
-                            }
-
-                            throw _iteratorError2;
-
-                        case 70:
-                            return _context2.finish(67);
-
-                        case 71:
-                            return _context2.finish(64);
-
-                        case 72:
-                            _iteratorNormalCompletion = true;
-                            _context2.next = 8;
-                            break;
-
-                        case 75:
-                            _context2.next = 81;
-                            break;
-
-                        case 77:
-                            _context2.prev = 77;
-                            _context2.t4 = _context2["catch"](6);
+                            _context2.prev = 8;
+                            _context2.t0 = _context2["catch"](4);
                             _didIteratorError = true;
-                            _iteratorError = _context2.t4;
+                            _iteratorError = _context2.t0;
 
-                        case 81:
-                            _context2.prev = 81;
-                            _context2.prev = 82;
+                        case 12:
+                            _context2.prev = 12;
+                            _context2.prev = 13;
 
                             if (!_iteratorNormalCompletion && _iterator.return) {
                                 _iterator.return();
                             }
 
-                        case 84:
-                            _context2.prev = 84;
+                        case 15:
+                            _context2.prev = 15;
 
                             if (!_didIteratorError) {
-                                _context2.next = 87;
+                                _context2.next = 18;
                                 break;
                             }
 
                             throw _iteratorError;
 
-                        case 87:
-                            return _context2.finish(84);
+                        case 18:
+                            return _context2.finish(15);
 
-                        case 88:
-                            return _context2.finish(81);
+                        case 19:
+                            return _context2.finish(12);
 
-                        case 89:
+                        case 20:
+                            return _context2.delegateYield(possibleMoves, "t1", 21);
+
+                        case 21:
                         case "end":
                             return _context2.stop();
                     }
                 }
-            }, getPossibleMoves, this, [[6, 77, 81, 89], [13, 60, 64, 72], [20, 53], [26, 39, 43, 51], [44,, 46, 50], [65,, 67, 71], [82,, 84, 88]]);
+            }, getPossibleMoves, this, [[4, 8, 12, 20], [13,, 15, 19]]);
+        })
+    }, {
+        key: "getPossibleMovesWithoutPromotion",
+        value: regeneratorRuntime.mark(function getPossibleMovesWithoutPromotion(game, x, y) {
+            var distance, hittingMoves, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, hittingMove, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, move, cell, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, logEntry;
+
+            return regeneratorRuntime.wrap(function getPossibleMovesWithoutPromotion$(_context3) {
+                while (1) {
+                    switch (_context3.prev = _context3.next) {
+                        case 0:
+                            // a pawn can move two spaces if it hasn't moved yet
+                            distance = this.hasMoved ? 1 : 2;
+
+                            // move in front
+
+                            return _context3.delegateYield(this.getMovesInDirection(game, x, y, this.getOwnerDirection(), distance, MOVING_BEHAVIORS.STOPPING), "t0", 2);
+
+                        case 2:
+
+                            // diagonal moves - only available if the move can kill an opposing piece
+                            hittingMoves = [{ x: 1, y: this.getOwnerDirection().y }, { x: -1, y: this.getOwnerDirection().y }];
+                            _iteratorNormalCompletion2 = true;
+                            _didIteratorError2 = false;
+                            _iteratorError2 = undefined;
+                            _context3.prev = 6;
+                            _iterator2 = hittingMoves[Symbol.iterator]();
+
+                        case 8:
+                            if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                                _context3.next = 75;
+                                break;
+                            }
+
+                            hittingMove = _step2.value;
+
+                            // move one field diagonal and check
+                            _iteratorNormalCompletion3 = true;
+                            _didIteratorError3 = false;
+                            _iteratorError3 = undefined;
+                            _context3.prev = 13;
+                            _iterator3 = this.getMovesInDirection(game, x, y, hittingMove, 1)[Symbol.iterator]();
+
+                        case 15:
+                            if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                                _context3.next = 58;
+                                break;
+                            }
+
+                            move = _step3.value;
+
+                            if (!game.getCell(move).piece) {
+                                _context3.next = 20;
+                                break;
+                            }
+
+                            _context3.next = 20;
+                            return move;
+
+                        case 20:
+                            _context3.prev = 20;
+                            cell = this.getPassableCell(game, x + hittingMove.x, y);
+
+                            if (!(cell.piece && cell.piece.name === "Pawn" && cell.piece.owner !== this.owner)) {
+                                _context3.next = 51;
+                                break;
+                            }
+
+                            // check game history
+                            _iteratorNormalCompletion4 = true;
+                            _didIteratorError4 = false;
+                            _iteratorError4 = undefined;
+                            _context3.prev = 26;
+                            _iterator4 = this.lastTurnActions(game)[Symbol.iterator]();
+
+                        case 28:
+                            if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
+                                _context3.next = 37;
+                                break;
+                            }
+
+                            logEntry = _step4.value;
+
+                            if (!(logEntry.target.x === x + hittingMove.x && logEntry.target.y === y && logEntry.source.x === x + hittingMove.x && logEntry.source.y === y + -2 * this.getOwnerDirection(cell.piece.owner.number).y)) {
+                                _context3.next = 34;
+                                break;
+                            }
+
+                            move.special = 'en-passant';
+                            _context3.next = 34;
+                            return move;
+
+                        case 34:
+                            _iteratorNormalCompletion4 = true;
+                            _context3.next = 28;
+                            break;
+
+                        case 37:
+                            _context3.next = 43;
+                            break;
+
+                        case 39:
+                            _context3.prev = 39;
+                            _context3.t1 = _context3["catch"](26);
+                            _didIteratorError4 = true;
+                            _iteratorError4 = _context3.t1;
+
+                        case 43:
+                            _context3.prev = 43;
+                            _context3.prev = 44;
+
+                            if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                                _iterator4.return();
+                            }
+
+                        case 46:
+                            _context3.prev = 46;
+
+                            if (!_didIteratorError4) {
+                                _context3.next = 49;
+                                break;
+                            }
+
+                            throw _iteratorError4;
+
+                        case 49:
+                            return _context3.finish(46);
+
+                        case 50:
+                            return _context3.finish(43);
+
+                        case 51:
+                            _context3.next = 55;
+                            break;
+
+                        case 53:
+                            _context3.prev = 53;
+                            _context3.t2 = _context3["catch"](20);
+
+                        case 55:
+                            _iteratorNormalCompletion3 = true;
+                            _context3.next = 15;
+                            break;
+
+                        case 58:
+                            _context3.next = 64;
+                            break;
+
+                        case 60:
+                            _context3.prev = 60;
+                            _context3.t3 = _context3["catch"](13);
+                            _didIteratorError3 = true;
+                            _iteratorError3 = _context3.t3;
+
+                        case 64:
+                            _context3.prev = 64;
+                            _context3.prev = 65;
+
+                            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                                _iterator3.return();
+                            }
+
+                        case 67:
+                            _context3.prev = 67;
+
+                            if (!_didIteratorError3) {
+                                _context3.next = 70;
+                                break;
+                            }
+
+                            throw _iteratorError3;
+
+                        case 70:
+                            return _context3.finish(67);
+
+                        case 71:
+                            return _context3.finish(64);
+
+                        case 72:
+                            _iteratorNormalCompletion2 = true;
+                            _context3.next = 8;
+                            break;
+
+                        case 75:
+                            _context3.next = 81;
+                            break;
+
+                        case 77:
+                            _context3.prev = 77;
+                            _context3.t4 = _context3["catch"](6);
+                            _didIteratorError2 = true;
+                            _iteratorError2 = _context3.t4;
+
+                        case 81:
+                            _context3.prev = 81;
+                            _context3.prev = 82;
+
+                            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                                _iterator2.return();
+                            }
+
+                        case 84:
+                            _context3.prev = 84;
+
+                            if (!_didIteratorError2) {
+                                _context3.next = 87;
+                                break;
+                            }
+
+                            throw _iteratorError2;
+
+                        case 87:
+                            return _context3.finish(84);
+
+                        case 88:
+                            return _context3.finish(81);
+
+                        case 89:
+                        case "end":
+                            return _context3.stop();
+                    }
+                }
+            }, getPossibleMovesWithoutPromotion, this, [[6, 77, 81, 89], [13, 60, 64, 72], [20, 53], [26, 39, 43, 51], [44,, 46, 50], [65,, 67, 71], [82,, 84, 88]]);
         })
     }, {
         key: "lastTurnActions",
@@ -1190,15 +1291,15 @@ var God = exports.God = function (_BlackWhiteChessPiece2) {
         value: regeneratorRuntime.mark(function getPossibleMoves(game, x, y) {
             var _y, _x3;
 
-            return regeneratorRuntime.wrap(function getPossibleMoves$(_context3) {
+            return regeneratorRuntime.wrap(function getPossibleMoves$(_context4) {
                 while (1) {
-                    switch (_context3.prev = _context3.next) {
+                    switch (_context4.prev = _context4.next) {
                         case 0:
                             _y = 0;
 
                         case 1:
                             if (!(_y < game.board.length)) {
-                                _context3.next = 12;
+                                _context4.next = 12;
                                 break;
                             }
 
@@ -1206,26 +1307,26 @@ var God = exports.God = function (_BlackWhiteChessPiece2) {
 
                         case 3:
                             if (!(_x3 < game.board[_y].length)) {
-                                _context3.next = 9;
+                                _context4.next = 9;
                                 break;
                             }
 
-                            _context3.next = 6;
+                            _context4.next = 6;
                             return { x: _x3, y: _y };
 
                         case 6:
                             _x3++;
-                            _context3.next = 3;
+                            _context4.next = 3;
                             break;
 
                         case 9:
                             _y++;
-                            _context3.next = 1;
+                            _context4.next = 1;
                             break;
 
                         case 12:
                         case "end":
-                            return _context3.stop();
+                            return _context4.stop();
                     }
                 }
             }, getPossibleMoves, this);
@@ -1253,28 +1354,28 @@ var Rook = exports.Rook = function (_BlackWhiteChessPiece3) {
         key: "getPossibleMoves",
         value: regeneratorRuntime.mark(function getPossibleMoves(game, x, y) {
             var d;
-            return regeneratorRuntime.wrap(function getPossibleMoves$(_context4) {
+            return regeneratorRuntime.wrap(function getPossibleMoves$(_context5) {
                 while (1) {
-                    switch (_context4.prev = _context4.next) {
+                    switch (_context5.prev = _context5.next) {
                         case 0:
                             d = 0;
 
                         case 1:
                             if (!(d < STRAIGHT_DIRECTIONS.length)) {
-                                _context4.next = 6;
+                                _context5.next = 6;
                                 break;
                             }
 
-                            return _context4.delegateYield(this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d]), "t0", 3);
+                            return _context5.delegateYield(this.getMovesInDirection(game, x, y, STRAIGHT_DIRECTIONS[d]), "t0", 3);
 
                         case 3:
                             d++;
-                            _context4.next = 1;
+                            _context5.next = 1;
                             break;
 
                         case 6:
                         case "end":
-                            return _context4.stop();
+                            return _context5.stop();
                     }
                 }
             }, getPossibleMoves, this);
@@ -1302,29 +1403,29 @@ var Knight = exports.Knight = function (_BlackWhiteChessPiece4) {
         key: "getPossibleMoves",
         value: regeneratorRuntime.mark(function getPossibleMoves(game, x, y) {
             var relativeMoves, d;
-            return regeneratorRuntime.wrap(function getPossibleMoves$(_context5) {
+            return regeneratorRuntime.wrap(function getPossibleMoves$(_context6) {
                 while (1) {
-                    switch (_context5.prev = _context5.next) {
+                    switch (_context6.prev = _context6.next) {
                         case 0:
                             relativeMoves = [{ x: 2, y: 1 }, { x: 2, y: -1 }, { x: -2, y: 1 }, { x: -2, y: -1 }, { x: 1, y: 2 }, { x: -1, y: 2 }, { x: 1, y: -2 }, { x: -1, y: -2 }];
                             d = 0;
 
                         case 2:
                             if (!(d < relativeMoves.length)) {
-                                _context5.next = 7;
+                                _context6.next = 7;
                                 break;
                             }
 
-                            return _context5.delegateYield(this.getMovesInDirection(game, x, y, relativeMoves[d], 1), "t0", 4);
+                            return _context6.delegateYield(this.getMovesInDirection(game, x, y, relativeMoves[d], 1), "t0", 4);
 
                         case 4:
                             d++;
-                            _context5.next = 2;
+                            _context6.next = 2;
                             break;
 
                         case 7:
                         case "end":
-                            return _context5.stop();
+                            return _context6.stop();
                     }
                 }
             }, getPossibleMoves, this);
@@ -1352,28 +1453,28 @@ var Bishop = exports.Bishop = function (_BlackWhiteChessPiece5) {
         key: "getPossibleMoves",
         value: regeneratorRuntime.mark(function getPossibleMoves(game, x, y) {
             var d;
-            return regeneratorRuntime.wrap(function getPossibleMoves$(_context6) {
+            return regeneratorRuntime.wrap(function getPossibleMoves$(_context7) {
                 while (1) {
-                    switch (_context6.prev = _context6.next) {
+                    switch (_context7.prev = _context7.next) {
                         case 0:
                             d = 0;
 
                         case 1:
                             if (!(d < DIAGONAL_DIRECTIONS.length)) {
-                                _context6.next = 6;
+                                _context7.next = 6;
                                 break;
                             }
 
-                            return _context6.delegateYield(this.getMovesInDirection(game, x, y, DIAGONAL_DIRECTIONS[d]), "t0", 3);
+                            return _context7.delegateYield(this.getMovesInDirection(game, x, y, DIAGONAL_DIRECTIONS[d]), "t0", 3);
 
                         case 3:
                             d++;
-                            _context6.next = 1;
+                            _context7.next = 1;
                             break;
 
                         case 6:
                         case "end":
-                            return _context6.stop();
+                            return _context7.stop();
                     }
                 }
             }, getPossibleMoves, this);
@@ -1401,28 +1502,28 @@ var Queen = exports.Queen = function (_BlackWhiteChessPiece6) {
         key: "getPossibleMoves",
         value: regeneratorRuntime.mark(function getPossibleMoves(game, x, y) {
             var d;
-            return regeneratorRuntime.wrap(function getPossibleMoves$(_context7) {
+            return regeneratorRuntime.wrap(function getPossibleMoves$(_context8) {
                 while (1) {
-                    switch (_context7.prev = _context7.next) {
+                    switch (_context8.prev = _context8.next) {
                         case 0:
                             d = 0;
 
                         case 1:
                             if (!(d < ALL_DIRECTIONS.length)) {
-                                _context7.next = 6;
+                                _context8.next = 6;
                                 break;
                             }
 
-                            return _context7.delegateYield(this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d]), "t0", 3);
+                            return _context8.delegateYield(this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d]), "t0", 3);
 
                         case 3:
                             d++;
-                            _context7.next = 1;
+                            _context8.next = 1;
                             break;
 
                         case 6:
                         case "end":
-                            return _context7.stop();
+                            return _context8.stop();
                     }
                 }
             }, getPossibleMoves, this);
@@ -1450,28 +1551,28 @@ var King = exports.King = function (_BlackWhiteChessPiece7) {
         key: "getPossibleMoves",
         value: regeneratorRuntime.mark(function getPossibleMoves(game, x, y) {
             var d;
-            return regeneratorRuntime.wrap(function getPossibleMoves$(_context8) {
+            return regeneratorRuntime.wrap(function getPossibleMoves$(_context9) {
                 while (1) {
-                    switch (_context8.prev = _context8.next) {
+                    switch (_context9.prev = _context9.next) {
                         case 0:
                             d = 0;
 
                         case 1:
                             if (!(d < ALL_DIRECTIONS.length)) {
-                                _context8.next = 6;
+                                _context9.next = 6;
                                 break;
                             }
 
-                            return _context8.delegateYield(this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d], 1), "t0", 3);
+                            return _context9.delegateYield(this.getMovesInDirection(game, x, y, ALL_DIRECTIONS[d], 1), "t0", 3);
 
                         case 3:
                             d++;
-                            _context8.next = 1;
+                            _context9.next = 1;
                             break;
 
                         case 6:
                         case "end":
-                            return _context8.stop();
+                            return _context9.stop();
                     }
                 }
             }, getPossibleMoves, this);

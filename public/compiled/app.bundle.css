@@ -1,3 +1,54 @@
+[class*=piece-]:before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain; }
+
+.piece-god-black:before {
+  background-image: url("/images/pieces/chess_svg/god_black.svg"); }
+
+.piece-god-white:before {
+  background-image: url("/images/pieces/chess_svg/god_white.svg"); }
+
+.piece-pawn-black:before {
+  background-image: url("/images/pieces/chess_svg/pawn_black.svg"); }
+
+.piece-pawn-white:before {
+  background-image: url("/images/pieces/chess_svg/pawn_white.svg"); }
+
+.piece-rook-black:before {
+  background-image: url("/images/pieces/chess_svg/rook_black.svg"); }
+
+.piece-rook-white:before {
+  background-image: url("/images/pieces/chess_svg/rook_white.svg"); }
+
+.piece-knight-black:before {
+  background-image: url("/images/pieces/chess_svg/knight_black.svg"); }
+
+.piece-knight-white:before {
+  background-image: url("/images/pieces/chess_svg/knight_white.svg"); }
+
+.piece-bishop-black:before {
+  background-image: url("/images/pieces/chess_svg/bishop_black.svg"); }
+
+.piece-bishop-white:before {
+  background-image: url("/images/pieces/chess_svg/bishop_white.svg"); }
+
+.piece-queen-black:before {
+  background-image: url("/images/pieces/chess_svg/queen_black.svg"); }
+
+.piece-queen-white:before {
+  background-image: url("/images/pieces/chess_svg/queen_white.svg"); }
+
+.piece-king-black:before {
+  background-image: url("/images/pieces/chess_svg/king_black.svg"); }
+
+.piece-king-white:before {
+  background-image: url("/images/pieces/chess_svg/king_white.svg"); }
+
 .board {
   position: relative;
   margin: 0 auto; }
@@ -15,41 +66,6 @@
           box-shadow: inset 0 0 3px 8px red; }
       .board table td.tile-black {
         background-color: dimgray; }
-      .board table td:before {
-        content: '';
-        display: block;
-        width: 100%;
-        height: 100%;
-        background: no-repeat center;
-        background-size: contain; }
-      .board table td.piece-god-black:before {
-        background-image: url("/images/pieces/chess_svg/god_black.svg"); }
-      .board table td.piece-god-white:before {
-        background-image: url("/images/pieces/chess_svg/god_white.svg"); }
-      .board table td.piece-pawn-black:before {
-        background-image: url("/images/pieces/chess_svg/pawn_black.svg"); }
-      .board table td.piece-pawn-white:before {
-        background-image: url("/images/pieces/chess_svg/pawn_white.svg"); }
-      .board table td.piece-rook-black:before {
-        background-image: url("/images/pieces/chess_svg/rook_black.svg"); }
-      .board table td.piece-rook-white:before {
-        background-image: url("/images/pieces/chess_svg/rook_white.svg"); }
-      .board table td.piece-knight-black:before {
-        background-image: url("/images/pieces/chess_svg/knight_black.svg"); }
-      .board table td.piece-knight-white:before {
-        background-image: url("/images/pieces/chess_svg/knight_white.svg"); }
-      .board table td.piece-bishop-black:before {
-        background-image: url("/images/pieces/chess_svg/bishop_black.svg"); }
-      .board table td.piece-bishop-white:before {
-        background-image: url("/images/pieces/chess_svg/bishop_white.svg"); }
-      .board table td.piece-queen-black:before {
-        background-image: url("/images/pieces/chess_svg/queen_black.svg"); }
-      .board table td.piece-queen-white:before {
-        background-image: url("/images/pieces/chess_svg/queen_white.svg"); }
-      .board table td.piece-king-black:before {
-        background-image: url("/images/pieces/chess_svg/king_black.svg"); }
-      .board table td.piece-king-white:before {
-        background-image: url("/images/pieces/chess_svg/king_white.svg"); }
   .board .overlay {
     display: none;
     position: absolute;
@@ -78,6 +94,17 @@
         padding: 2px;
         border-bottom: 1px solid gray;
         margin-bottom: 5px; }
+    .board .overlay #pawn-promotion {
+      overflow: auto; }
+      .board .overlay #pawn-promotion > div {
+        height: 64px;
+        width: 64px;
+        float: left;
+        margin: 5px;
+        cursor: pointer; }
+        .board .overlay #pawn-promotion > div:hover {
+          background-color: rgba(0, 0, 0, 0.5);
+          box-shadow: 0 0 5px black; }
 
 html, body {
   margin: 0;

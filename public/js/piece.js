@@ -46,7 +46,7 @@ class Piece {
         throw "NotImplemented";
     }
 
-    *getMovesInDirection(game, x, y, direction, maxDistance = false, behaviour = MOVING_BEHAVIORS.HITTING) {
+    *getMovesInDirection(game, x, y, direction, maxDistance = 9999, behaviour = MOVING_BEHAVIORS.HITTING) {
         let pos = {x: x, y: y};
         let distance = 0;
 
@@ -118,8 +118,22 @@ export class Pawn extends BlackWhiteChessPiece {
         return 'piece-pawn-' + super.class;
     }
 
+    // this marks the promotion moves
     *getPossibleMoves(game, x, y) {
-
+        let possibleMoves = [...this.getPossibleMovesWithoutPromotion(game, x, y)];
+        for (let move of possibleMoves) {
+            try {
+                game.getCell(move.x, move.y + this.getOwnerDirection().y);
+            } catch(err) {
+                // mark as promotion if next step would be outside the board
+                if (err === "OutsideOfBoard") {
+                    move.special = 'promote'
+                }
+            }
+        }
+        yield* possibleMoves;
+    }
+    *getPossibleMovesWithoutPromotion(game, x, y) {
         // a pawn can move two spaces if it hasn't moved yet
         let distance = (this.hasMoved ? 1 : 2);
 

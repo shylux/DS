@@ -1,6 +1,8 @@
 import Player from './player'
 import Game from './game'
 import {RULE_SETS} from './game_types/rulesets'
+import {Queen, Rook, Bishop, Knight, Pawn} from "./piece";
+import {PIECE_REGISTRY} from "./game_types/pieceregistry";
 
 // client side
 export default class GameMaster {
@@ -22,6 +24,14 @@ export default class GameMaster {
         $('#board-wrapper').append(this.html);
         $('td', this.html).on('click', function(event) {
             this.handleClick(this.getCell($(event.target)));
+        }.bind(this));
+
+        $(document).on('click', '#pawn-promotion > div', function(event) {
+            let target = $(event.target);
+            let logEntry = this.promotionCache;
+            logEntry.promotionPieceName = target.data('name');
+            this.hideNotification();
+            this.socket.emit('game action', logEntry);
         }.bind(this));
 
         this.socket = socket;
@@ -71,6 +81,14 @@ export default class GameMaster {
                 logEntry.passantClass = this.game.getCell(cell.x, sourceCell.y).piece.class;
             }
 
+            if (targetJQCell.hasClass('promote')) {
+                logEntry.special = 'promote';
+                this.promotionCache = logEntry;
+                this.showPromotionPrompt();
+                this.deselectPiece();
+                return;
+            }
+
             this.deselectPiece();
 
             this.socket.emit('game action', logEntry);
@@ -110,9 +128,16 @@ export default class GameMaster {
             }
 
             // do special moves
-            for (let move of logEntry.moves) {
-                if (move.special === 'en-passant') {
-                    this.getjqCell({x: move.target.x, y: move.source.y}).removeClass(move.passantClass);
+            for (let smove of logEntry.moves) {
+                if (smove.special === 'en-passant') {
+                    this.getjqCell({x: smove.target.x, y: smove.source.y}).removeClass(smove.passantClass);
+                }
+                if (smove.special === 'promote') {
+                    let targetJqCellFU = this.getjqCell(smove.target);
+                    let player = this.game.getPlayer(smove.playerNumber);
+                    targetJqCellFU.removeClass(new Pawn(player).class);
+                    let pieceClass = PIECE_REGISTRY[smove.promotionPieceName];
+                    targetJqCellFU.addClass(new pieceClass(player).class);
                 }
             }
         }
@@ -164,7 +189,8 @@ export default class GameMaster {
         $('.selected', this.html).removeClass('selected');
         $('.possibleMove', this.html)
             .removeClass('possibleMove')
-            .removeClass('en-passant');
+            .removeClass('en-passant')
+            .removeClass('promote');
     }
 
     showNotification(title, content) {
@@ -181,6 +207,17 @@ export default class GameMaster {
     }
     hideNotification() {
         $('.overlay', this.html).hide();
+    }
+
+    showPromotionPrompt() {
+        let template = require("../templates/promote.hbs");
+        let html = template({pieces: [
+            new Queen(this.localPlayer),
+            new Rook(this.localPlayer),
+            new Bishop(this.localPlayer),
+            new Knight(this.localPlayer)
+        ]});
+        this.showNotification('Promote your pawn!', html);
     }
 
     render() {
