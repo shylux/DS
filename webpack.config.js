@@ -1,14 +1,19 @@
-var path = require('path');
-var webpack = require('webpack');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var nodeExternals = require('webpack-node-externals');
+const path = require('path');
+const webpack = require('webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const nodeExternals = require('webpack-node-externals');
 
-var wbloaders = [
+const wbloaders = [
     {
         test: /\.js$/,
         loader: 'babel-loader',
         query: {
-            presets: ['es2015']
+            presets: [
+                [
+                    "@babel/preset-env",
+                    { "useBuiltIns": "entry" }
+                ]
+            ]
         }
     },
     {
@@ -22,18 +27,23 @@ var wbloaders = [
     },
     {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract(['css-loader', 'sass-loader'])
+        use: [
+            { loader: MiniCssExtractPlugin.loader },
+            'css-loader',
+            'sass-loader'
+        ]
     }
 ];
 
 module.exports = [{
-    entry: ['babel-polyfill', './public/js/client.js', './public/css/main.scss'],
+    mode: 'development',
+    entry: ['@babel/polyfill', './public/js/client.js', './public/css/main.scss'],
     output: {
         path: path.resolve(__dirname, 'public/compiled'),
         filename: 'app.bundle.js'
     },
     module: {
-        loaders: wbloaders
+        rules: wbloaders
     },
     plugins: [
         new webpack.ProvidePlugin({
@@ -41,9 +51,8 @@ module.exports = [{
             Handlebars: "handlebars",
             io: "socket.io-client"
         }),
-        new ExtractTextPlugin({
-            filename: 'app.bundle.css',
-            allChunks: true
+        new MiniCssExtractPlugin({
+            filename: 'app.bundle.css'
         })
     ],
     stats: {
@@ -53,6 +62,7 @@ module.exports = [{
 },
 
 {
+    mode: 'development',
     target: 'node',
     externals: [nodeExternals()],
     entry: ['babel-polyfill', './server.js'],
@@ -60,7 +70,7 @@ module.exports = [{
         filename: 'app.js'
     },
     module: {
-        loaders: wbloaders
+        rules: wbloaders
     },
     stats: {
         colors: true
