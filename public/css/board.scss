@@ -1,21 +1,30 @@
 $chess-pieces: god pawn rook knight bishop queen king;
 
-[class*=piece-]:before {
-  content: '';
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-}
-@each $piece in $chess-pieces {
-  .piece-#{$piece}-black:before {
-    background-image: url("/images/pieces/chess_svg/#{$piece}_black.svg");
-  }
-  .piece-#{$piece}-white:before {
-    background-image: url("/images/pieces/chess_svg/#{$piece}_white.svg");
-  }
+//[class*=piece-]:before {
+//  content: '';
+//  display: block;
+//  width: 100%;
+//  height: 100%;
+//  background-repeat: no-repeat;
+//  background-position: center;
+//  background-size: contain;
+//}
+//@each $piece in $chess-pieces {
+//  .piece-#{$piece}-black {
+//    content:url("/images/pieces/chess_svg/#{$piece}_black.svg");
+//  }
+//  .piece-#{$piece}-white {
+//    content:url("/images/pieces/chess_svg/#{$piece}_white.svg");
+//  }
+//}
+
+[draggable] {
+  height: 65px;
+  width: 65px;
+  float: left;
+  user-select: none;
+  -webkit-user-drag: element;
+  cursor: move;
 }
 
 .board {

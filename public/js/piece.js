@@ -46,6 +46,10 @@ class Piece {
         throw "NotImplemented";
     }
 
+    get img() {
+        throw "NotImplemented";
+    }
+
     *getMovesInDirection(game, x, y, direction, maxDistance = 9999, behaviour = MOVING_BEHAVIORS.HITTING) {
         let pos = {x: x, y: y};
         let distance = 0;
@@ -102,10 +106,18 @@ class BlackWhiteChessPiece extends Piece {
         this.filename = filename;
     }
 
-    get class() {
+    get ownerColor() {
         if (this.owner.number === 1) return "white";
         if (this.owner.number === 2) return "black";
-        throw "InvalidOwnerNumber";
+        throw "InvalidOnwerNumber";
+    }
+
+    get class() {
+        return this.ownerColor;
+    }
+
+    get img() {
+        return "/images/pieces/chess_svg/" + this.name.toLowerCase() + "_" + this.ownerColor + ".svg";
     }
 }
 

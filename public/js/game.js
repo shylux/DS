@@ -23,7 +23,7 @@ export default class Game {
         this.height = rules.boardHeight;
         this.width = rules.boardWidth;
 
-        // save coords on cell for easier lookup
+        // save coords on cell for easier lookup [y][x]
         for (let y = 0; y < this.board.length; y++) {
             for (let x = 0; x < this.board[y].length; x++) {
                 let cell = this.board[y][x];
@@ -203,6 +203,7 @@ export default class Game {
         }
     }
 
+    // called with x, y or {x: int, y: int}, undefined
     getCell(x, y) {
         // pass only the x param to be handled as object: {x: 1, y: 1}
         if (y === undefined) {

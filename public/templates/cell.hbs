@@ -1,5 +1,5 @@
-<td class="{{classes}}" data-x="{{cell.x}}" data-y="{{cell.y}}">
-    {{#if image}}
-        <img src="{{image}}" />
+<td class="cell {{tileClass}}" data-x="{{cell.x}}" data-y="{{cell.y}}">
+    {{#if piece}}
+        <img draggable="true" class="piece {{piece.class}}" src="{{piece.img}}" alt="{{piece.name}}" />
     {{/if}}
 </td>

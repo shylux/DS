@@ -3,6 +3,7 @@ import Game from './game'
 import {RULE_SETS} from './game_types/rulesets'
 import {Queen, Rook, Bishop, Knight, Pawn} from "./piece";
 import {PIECE_REGISTRY} from "./game_types/pieceregistry";
+import $ from "jquery";
 
 // client side
 export default class GameMaster {
@@ -22,11 +23,32 @@ export default class GameMaster {
         this.html.css('width', this.game.width*64+"px");
 
         $('#board-wrapper').append(this.html);
-        $('td', this.html).on('click', function(event) {
-            this.handleClick(this.getCell($(event.target)));
+        $(this.html).on('dragstart', '[draggable]', function(event) {
+            let cell = this.getCell($(event.target).closest('.cell'));
+            event.originalEvent.dataTransfer.setData('text/json', JSON.stringify({x: cell.x, y: cell.y}));
+            this.selectPiece(cell);
+            //TODO: handle only click
+            //this.handleClick(this.getCell($(event.target)));
+        }.bind(this));
+        $(this.html).on('dragend', '[draggable]', function(event) {
+            console.log('end');
+            this.deselectPiece();
+        }.bind(this));
+        // enable drop on possible move target
+        $(this.html).on('dragover', '.cell', function(event) {
+            if ($(event.target).hasClass('possibleMove'))
+                event.preventDefault();
+        });
+        $(this.html).on('drop', '.possibleMove', function(event) {
+            let targetCell = this.getCell($(event.target));
+            this.handleClick(targetCell);
+        }.bind(this));
+        $(this.html).on('click', '[draggable], .possibleMove', function(event) {
+            let cell = this.getCell($(event.target).closest('.cell'));
+            this.handleClick(cell);
         }.bind(this));
 
-        $(document).on('click', '#pawn-promotion > div', function(event) {
+        $(document).on('click', '#pawn-promotion > img', function(event) {
             let target = $(event.target);
             let logEntry = this.promotionCache;
             logEntry.promotionPieceName = target.data('name');
@@ -108,38 +130,40 @@ export default class GameMaster {
         }
     }
 
+    // make change on the visual board
     executeAction(logEntry) {
+        if (logEntry.action === 'place piece') {
+            let cell = this.game.getCell(logEntry);
+            this.redrawCell(cell)
+        }
+
+        //TODO handle other with redraw
         if (logEntry.action === 'sym move') {
-            // pick up pieces
             for (let move of logEntry.moves) {
-                let sourceJqCell = this.getjqCell(move.source);
-                sourceJqCell.removeClass(move.movedPieceClass);
-            }
+                let sourceCell = this.game.getCell(move.source);
+                this.redrawCell(sourceCell);
+                let targetCell = this.game.getCell(move.target);
+                this.redrawCell(targetCell);
 
-            // put pieces down
-            for (let move of logEntry.moves) {
-                if (move.destroyed)
-                    continue;
-
-                let targetJqCell = this.getjqCell(move.target);
-                if (move.capturedPieceClass)
-                    targetJqCell.removeClass(move.capturedPieceClass);
-                targetJqCell.addClass(move.movedPieceClass);
+                if (move.special && move.special === 'en-passant') {
+                    let destroyCell = this.game.getCell(move.target.x, move.source.y);
+                    this.redrawCell(destroyCell);
+                }
             }
 
             // do special moves
-            for (let smove of logEntry.moves) {
-                if (smove.special === 'en-passant') {
-                    this.getjqCell({x: smove.target.x, y: smove.source.y}).removeClass(smove.passantClass);
-                }
-                if (smove.special === 'promote') {
-                    let targetJqCellFU = this.getjqCell(smove.target);
-                    let player = this.game.getPlayer(smove.playerNumber);
-                    targetJqCellFU.removeClass(new Pawn(player).class);
-                    let pieceClass = PIECE_REGISTRY[smove.promotionPieceName];
-                    targetJqCellFU.addClass(new pieceClass(player).class);
-                }
-            }
+            // for (let smove of logEntry.moves) {
+            //     if (smove.special === 'en-passant') {
+            //         this.getjqCell({x: smove.target.x, y: smove.source.y}).removeClass(smove.passantClass);
+            //     }
+            //     if (smove.special === 'promote') {
+            //         let targetJqCellFU = this.getjqCell(smove.target);
+            //         let player = this.game.getPlayer(smove.playerNumber);
+            //         targetJqCellFU.removeClass(new Pawn(player).class);
+            //         let pieceClass = PIECE_REGISTRY[smove.promotionPieceName];
+            //         targetJqCellFU.addClass(new pieceClass(player).class);
+            //     }
+            // }
         }
 
         if (logEntry.action === 'gameEnd') {
@@ -155,12 +179,13 @@ export default class GameMaster {
                 this.showNotification('2nd Place', 'You lost this game');
             }
         }
+    }
 
-        if (logEntry.action === 'place piece') {
-            let jqCell = this.getjqCell(logEntry);
-            let cell = this.getCell(jqCell);
-            jqCell.addClass(cell.piece.class);
-        }
+    // cell: class Cell
+    redrawCell(cell) {
+        let jqCell = this.getjqCell(cell);
+        $(cell.render()).insertAfter(jqCell);
+        jqCell.remove();
     }
 
     getCell(jqcell) {

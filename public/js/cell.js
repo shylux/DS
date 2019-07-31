@@ -10,15 +10,13 @@ export default class Cell {
         return this._tile;
     }
 
-    get classes() {
-        let cls = this.tile.classes;
-        if (this.piece) cls.push(this.piece.class);
-        return cls;
-    }
-
     render() {
         let template = require("../templates/cell.hbs");
-        let params = {cell: this, classes: this.classes.join(' ')};
+        let params = {
+            cell: this,
+            tileClass: this.tile.classes,
+            piece: this.piece
+        };
         return template(params);
     }
 }
